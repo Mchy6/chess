@@ -16,6 +16,8 @@ public abstract class PieceMovesCalculator {
             return BishopMovesCalculator.pieceMoves(board, myPosition);
         } else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN) {
             return PawnMovesCalculator.pieceMoves(board, myPosition);
+        } else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.ROOK) {
+            return RookMovesCalculator.pieceMoves(board, myPosition);
         }
         /*else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.KING) {
             return KingMovesCalculator.pieceMoves(board, myPosition);
@@ -26,9 +28,7 @@ public abstract class PieceMovesCalculator {
         else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.QUEEN) {
             return QueenMovesCalculator.pieceMoves(board, myPosition);
         }
-        else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.ROOK) {
-            return RookMovesCalculator.pieceMoves(board, myPosition);
-        }
+
         */
         return new ArrayList<>(); // should return list of valid moves
     }
