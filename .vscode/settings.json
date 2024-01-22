@@ -1,0 +1,16 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic"
+}
+
+// {
+//     "java.configuration.runtimes": [
+//       {
+//         "name": "JavaSE-1.8",
+//         "path": "/Users/mb/Library/Java/JavaVirtualMachines/corretto-21.0.2/Contents/Home",
+//         "default": true
+//       }
+//     ],
+//     "java.jdt.ls.vmargs": "-Xint",
+//     "java.compile.nullAnalysis.mode": "automatic"
+//   }
+  
