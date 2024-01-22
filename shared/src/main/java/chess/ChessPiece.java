@@ -2,6 +2,9 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
+
+import chess.pieceMoves.PieceMovesCalculator;
 
 /**
  * Represents a single chess piece
@@ -42,7 +45,6 @@ public class ChessPiece {
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-
         return this.type;
     }
 
@@ -54,6 +56,28 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>(); // should return list of valid moves
+        return PieceMovesCalculator.pieceMoves(board, myPosition);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ChessPiece{");
+        sb.append("pieceColor=").append(pieceColor);
+        sb.append(", type=").append(type);
+        sb.append('}');
+        return sb.toString();
     }
 }
