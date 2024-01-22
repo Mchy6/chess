@@ -14,20 +14,33 @@ public class BishopMovesCalculator extends PieceMovesCalculator {
         Collection<ChessMove> bishopMoves = new ArrayList<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-        int i = 1;
-        while (row + i <= 8 && col + i <= 8) {
-            ChessPosition position = new ChessPosition(row + i, col + i);
-            System.out.println(position);
-            if (board.getPiece(position) == null) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-            } else if (board.getPiece(position).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else {
-                break;
-            }
-            i++;
+        System.out.printf("(initial) row: %d, col: %d\n", row, col);
+
+        // Bottom left
+        for (int i = row - 1, j = col - 1; i >= 1 && j >= 1; i--, j--) {
+            ChessPosition position = new ChessPosition(i, j);
+            bishopMoves.add(new ChessMove(myPosition, position, null));
         }
+
+        // Top left
+        for (int i = row - 1, j = col + 1; i >= 1 && j <= 8; i--, j++) {
+             ChessPosition position = new ChessPosition(i, j);
+             bishopMoves.add(new ChessMove(myPosition, position, null));
+        }
+
+        // Bottom right
+        for (int i = row + 1, j = col - 1; i <= 8 && j >= 1; i++, j--) {
+            ChessPosition position = new ChessPosition(i, j);
+            bishopMoves.add(new ChessMove(myPosition, position, null));
+        }
+
+        // Top right
+        for (int i = row + 1, j = col + 1; i <= 8 && j <= 8; i++, j++) {
+            ChessPosition position = new ChessPosition(i, j);
+            bishopMoves.add(new ChessMove(myPosition, position, null));
+        }
+        
+        System.out.println(bishopMoves);
         return bishopMoves;
     }
 }

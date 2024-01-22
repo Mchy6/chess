@@ -25,6 +25,7 @@ public class ChessPosition {
         return row;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
