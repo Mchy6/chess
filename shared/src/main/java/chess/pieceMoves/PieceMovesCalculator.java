@@ -14,15 +14,14 @@ public abstract class PieceMovesCalculator {
             return new ArrayList<>();
         } else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.BISHOP) {
             return BishopMovesCalculator.pieceMoves(board, myPosition);
+        } else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN) {
+            return PawnMovesCalculator.pieceMoves(board, myPosition);
         }
         /*else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.KING) {
             return KingMovesCalculator.pieceMoves(board, myPosition);
         }
         else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.KNIGHT) {
             return KnightMovesCalculator.pieceMoves(board, myPosition);
-        }
-        else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN) {
-            return PawnMovesCalculator.pieceMoves(board, myPosition);
         }
         else if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.QUEEN) {
             return QueenMovesCalculator.pieceMoves(board, myPosition);

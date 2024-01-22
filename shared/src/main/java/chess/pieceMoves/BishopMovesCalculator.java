@@ -1,6 +1,7 @@
 package chess.pieceMoves;
 
 import chess.ChessBoard;
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 
@@ -14,33 +15,58 @@ public class BishopMovesCalculator extends PieceMovesCalculator {
         Collection<ChessMove> bishopMoves = new ArrayList<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-        System.out.printf("(initial) row: %d, col: %d\n", row, col);
-
+        ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
         // Bottom left
         for (int i = row - 1, j = col - 1; i >= 1 && j >= 1; i--, j--) {
             ChessPosition position = new ChessPosition(i, j);
-            bishopMoves.add(new ChessMove(myPosition, position, null));
+            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+                break;
+            } else if (board.getPiece(position) == null) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+            } else {
+                break;
+            }
         }
 
         // Top left
         for (int i = row - 1, j = col + 1; i >= 1 && j <= 8; i--, j++) {
-             ChessPosition position = new ChessPosition(i, j);
-             bishopMoves.add(new ChessMove(myPosition, position, null));
+            ChessPosition position = new ChessPosition(i, j);
+            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+                break;
+            } else if (board.getPiece(position) == null) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+            } else {
+                break;
+            }
         }
 
         // Bottom right
         for (int i = row + 1, j = col - 1; i <= 8 && j >= 1; i++, j--) {
             ChessPosition position = new ChessPosition(i, j);
-            bishopMoves.add(new ChessMove(myPosition, position, null));
+            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+                break;
+            } else if (board.getPiece(position) == null) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+            } else {
+                break;
+            }
         }
 
         // Top right
         for (int i = row + 1, j = col + 1; i <= 8 && j <= 8; i++, j++) {
             ChessPosition position = new ChessPosition(i, j);
-            bishopMoves.add(new ChessMove(myPosition, position, null));
+            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+                break;
+            } else if (board.getPiece(position) == null) {
+                bishopMoves.add(new ChessMove(myPosition, position, null));
+            } else {
+                break;
+            }
         }
-        
-        System.out.println(bishopMoves);
         return bishopMoves;
     }
 }
