@@ -16,8 +16,6 @@ public class RookMovesCalculator extends PieceMovesCalculator {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
-// (2,3)
-//        (2,4)(1,3)(2,5)(2,6)(2,7)(2,8)
 
         // Up
         for (int i = col + 1; i <= 8; i++) {
