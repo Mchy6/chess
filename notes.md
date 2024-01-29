@@ -13,3 +13,5 @@ Collection
 See photo for package organization
 
 Use @Override when overriding an inherited class (ex: toString)
+
+To eliminate moves for checkmate, just simulate each move and see if it puts the king in danger- if it does, remove it.
