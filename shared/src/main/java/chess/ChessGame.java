@@ -74,15 +74,23 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+
         if (validMoves(move.getStartPosition()).contains(move) && this.currentTeamColor == this.board.getPiece(move.getStartPosition()).getTeamColor()) {
             ChessPiece piece = this.board.getPiece(move.getStartPosition());
             this.board.removePiece(move.getStartPosition());
             this.board.removePiece(move.getEndPosition());
             this.board.addPiece(move.getEndPosition(), piece);
-//            this.setTeamTurn(this.currentTeamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+
+            if (move.getPromotionPiece() != null) {
+                this.board.removePiece(move.getEndPosition());
+                this.board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
+            }
+            currentTeamColor = (currentTeamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
         } else {
             throw new InvalidMoveException("Move is invalid");
         }
+
 
     }
 
@@ -117,8 +125,10 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
 //        this.tempBoard = this.board.copy();
         ChessPosition kingPosition = getKingPosition(teamColor);
-        ChessPiece king = this.board.getPiece(kingPosition);
-        Collection <ChessMove> kingMoves = king.pieceMoves(this.board, kingPosition);
+        if (kingPosition != null) {
+            ChessPiece king = this.board.getPiece(kingPosition);
+            Collection <ChessMove> kingMoves = king.pieceMoves(this.board, kingPosition);
+        }
 
         // get positions of all enemy pieces
         ArrayList<ChessPosition> enemyPiecePositions = new ArrayList<>();
@@ -169,8 +179,34 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> allMoves = new ArrayList<>();
+
+        // Iterate over all pieces on the board
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPiece piece = this.board.getPiece(new ChessPosition(i, j));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    ChessPosition currentPosition = new ChessPosition(i, j);
+
+                    // Check if the piece is the king and in check
+                    if (piece.getPieceType() == ChessPiece.PieceType.KING && isInCheck(teamColor)) {
+                        continue; // Skip king's moves if it's in check
+                    }
+
+                    System.out.println("" + piece.getTeamColor() + " " + piece.getPieceType() + " at " + currentPosition + " has moves: " + piece.pieceMoves(this.board, currentPosition));
+                    // Collect all moves for the piece
+                    allMoves.addAll(piece.pieceMoves(this.board, currentPosition));
+                }
+            }
+        }
+
+        // Check for checkmate
+        if (isInCheck(teamColor) && allMoves.isEmpty()) {
+            return true;
+        }
+        return false;
     }
+
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
@@ -180,8 +216,33 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> allMoves = new ArrayList<>();
+
+        // Iterate over all pieces on the board
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPiece piece = this.board.getPiece(new ChessPosition(i, j));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    ChessPosition currentPosition = new ChessPosition(i, j);
+
+                    // Check if the piece is the king and in stalemate
+                    if (piece.getPieceType() == ChessPiece.PieceType.KING && isInStalemate(teamColor)) {
+                        continue; // Skip king's moves if it's in stalemate
+                    }
+
+                    // Collect all moves for the piece
+                    allMoves.addAll(piece.pieceMoves(this.board, currentPosition));
+                }
+            }
+        }
+
+        // Check for stalemate
+        if (!isInCheck(teamColor) && allMoves.isEmpty()) {
+            return true;
+        }
+        return false;
     }
+
 
     /**
      * Sets this game's chessboard with a given board
