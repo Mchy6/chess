@@ -20,7 +20,6 @@ public class RookMovesCalculator extends PieceMovesCalculator {
         // Up
         for (int i = col + 1; i <= 8; i++) {
             ChessPosition position = new ChessPosition(row, i);
-//            System.out.println("position: " + position);
             if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
                 rookMoves.add(new ChessMove(myPosition, position, null));
                 break;
@@ -58,7 +57,7 @@ public class RookMovesCalculator extends PieceMovesCalculator {
             }
         }
 
-        // Right
+        // Up
         for (int i = row + 1; i <= 8; i++) {
             ChessPosition position = new ChessPosition(i, col);
 

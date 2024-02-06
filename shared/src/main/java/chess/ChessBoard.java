@@ -194,4 +194,19 @@ public class ChessBoard {
         return String.valueOf(symbol);
     }
 
+    public ChessBoard copy() {
+        ChessBoard newBoard = new ChessBoard();
+        // Copy each piece on the board
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition position = new ChessPosition(i, j);
+                ChessPiece piece = getPiece(position);
+                if (piece != null) {
+                    newBoard.addPiece(position, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                }
+            }
+        }
+        return newBoard;
+    }
+
 }
