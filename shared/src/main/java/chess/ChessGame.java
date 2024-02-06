@@ -18,8 +18,6 @@ public class ChessGame {
         this.board = new ChessBoard();
         this.board.resetBoard();
         this.setTeamTurn(TeamColor.WHITE);
-
-        
     }
 
     /**
@@ -30,7 +28,7 @@ public class ChessGame {
     }
 
     /**
-     * Set's which teams turn it is
+     * Sets which teams turn it is
      *
      * @param team the team whose turn it is
      */
@@ -54,7 +52,12 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = this.board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        } else {
+            return piece.pieceMoves(this.board, startPosition);
+        }
     }
 
     /**
@@ -66,6 +69,10 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         throw new RuntimeException("Not implemented");
         // throw new InvalidMoveException("something something");
+    }
+
+    public boolean moveIsValid(ChessMove move) {
+        
     }
 
     /**
