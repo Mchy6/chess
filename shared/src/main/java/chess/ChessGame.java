@@ -168,7 +168,6 @@ public class ChessGame {
                 }
             }
         }
-        System.out.println("King not found");
         return null;
     }
 
@@ -188,14 +187,10 @@ public class ChessGame {
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     ChessPosition currentPosition = new ChessPosition(i, j);
 
-                    // Check if the piece is the king and in check
-                    if (piece.getPieceType() == ChessPiece.PieceType.KING && isInCheck(teamColor)) {
-                        continue; // Skip king's moves if it's in check
-                    }
 
-                    System.out.println("" + piece.getTeamColor() + " " + piece.getPieceType() + " at " + currentPosition + " has moves: " + piece.pieceMoves(this.board, currentPosition));
+
                     // Collect all moves for the piece
-                    allMoves.addAll(piece.pieceMoves(this.board, currentPosition));
+                    allMoves.addAll(validMoves(currentPosition));
                 }
             }
         }
@@ -225,13 +220,10 @@ public class ChessGame {
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     ChessPosition currentPosition = new ChessPosition(i, j);
 
-                    // Check if the piece is the king and in stalemate
-                    if (piece.getPieceType() == ChessPiece.PieceType.KING && isInStalemate(teamColor)) {
-                        continue; // Skip king's moves if it's in stalemate
-                    }
+
 
                     // Collect all moves for the piece
-                    allMoves.addAll(piece.pieceMoves(this.board, currentPosition));
+                    allMoves.addAll(validMoves(currentPosition));
                 }
             }
         }
