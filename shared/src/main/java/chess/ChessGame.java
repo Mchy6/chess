@@ -98,14 +98,10 @@ public class ChessGame {
     private boolean moveIsValid(ChessMove move) {
         ChessBoard boardCopy = this.board.copy();
         ChessPiece piece = this.board.getPiece(move.getStartPosition());
-//        this.tempBoard = boardCopy;
-
 
         boardCopy.removePiece(move.getEndPosition());
         boardCopy.removePiece(move.getStartPosition());
         boardCopy.addPiece(move.getEndPosition(), piece);
-//        System.out.println("Just moved " + piece.getTeamColor() + " " + piece.getPieceType() + " from " + move.getStartPosition() + " to " + move.getEndPosition());
-
         ChessGame tempGame = new ChessGame();
         tempGame.setBoard(boardCopy);
 
@@ -140,7 +136,6 @@ public class ChessGame {
                 }
             }
         }
-//        System.out.println(enemyPiecePositions);
         // check if any enemy piece can move to the king's position
         for (ChessPosition position : enemyPiecePositions) {
             Collection<ChessMove> moves = this.board.getPiece(position).pieceMoves(this.board, position);
@@ -149,8 +144,6 @@ public class ChessGame {
             }
 //            System.out.println(moves);
             for (ChessMove move : moves) {
-//                System.out.println("Move: " + move.getEndPosition() + " King: " + kingPosition);
-//                System.out.println("Piece at kingPosition: " + this.board.getPiece(kingPosition));
                 if (move.getEndPosition().equals(kingPosition)) {
                     return true;
                 }
@@ -186,9 +179,6 @@ public class ChessGame {
                 ChessPiece piece = this.board.getPiece(new ChessPosition(i, j));
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     ChessPosition currentPosition = new ChessPosition(i, j);
-
-
-
                     // Collect all moves for the piece
                     allMoves.addAll(validMoves(currentPosition));
                 }
@@ -253,6 +243,4 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return this.board;
     }
-
-
 }
