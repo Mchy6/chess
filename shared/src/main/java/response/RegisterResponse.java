@@ -1,4 +1,4 @@
-package requests;
+package response;
 
 public class RegisterResponse {
     private String username;
@@ -14,4 +14,15 @@ public class RegisterResponse {
         this.message = message;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

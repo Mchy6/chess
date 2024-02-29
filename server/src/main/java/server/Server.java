@@ -1,10 +1,12 @@
 package server;
 import com.google.gson.Gson;
-import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import requests.RegisterRequest;
-import requests.RegisterResponse;
+import exception.*;
+import request.*;
+import response.*;
+import response.LoginResponse;
+import response.RegisterResponse;
 import server.service.Service;
 import spark.*;
 import exception.ResponseException;
@@ -22,46 +24,143 @@ public class Server {
 
         var gson = new Gson();
 
-
-        // Register your endpoints here
         // Clear application endpoint
         Spark.delete("/db", (req, res) -> {
 
             try {
                 service.clearDB();
             } catch (DataAccessException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
                 res.status(500);
-                return "{}";
+                return gson.toJson(exceptionResponse);
             }
 
             return "{}";
         });
+
         // Register endpoint
         Spark.post("/user", (req, res) -> {
             RegisterRequest registerRequest = gson.fromJson(req.body(), RegisterRequest.class);
-            RegisterResponse registerResponse = service.register(registerRequest);
 
             try {
-                service.register(registerRequest);
-            } catch (BadRequestException e) { // each exception should be implemented in src/main/java/server/exceptions
-                System.out.println("Bad request: " + e.getMessage());
+                RegisterResponse registerResponse = service.register(registerRequest);
+                return gson.toJson(registerResponse);
+            } catch (BadRequestException e) { // throw in service, when parameter is null (or not white/black for playerColor)
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(400);
+                return gson.toJson(exceptionResponse);
             } catch (AlreadyTakenException e) {
-                System.out.println("Username or email already taken: " + e.getMessage());
-            } catch (InternalServerErrorException e) {
-                System.out.println("Internal server error: " + e.getMessage());
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(403);
+                return gson.toJson(exceptionResponse);
             } catch (Exception e) {
-                // Catch-all for any other exceptions not explicitly caught above
-                System.out.println("An unexpected error occurred: " + e.getMessage());
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
             }
 
-            return gson.toJson(registerResponse);
         });
 
+        // Login endpoint
+        Spark.post("/session", (req, res) -> {
+            LoginRequest loginRequest = gson.fromJson(req.body(), LoginRequest.class);
 
-        Spark.delete("/db", this::clearDB);
-        Spark.exception(ResponseException.class, this::exceptionHandler);
+            try {
+                LoginResponse loginResponse = service.login(loginRequest);
+                return gson.toJson(loginResponse);
+            } catch (UnauthorizedException e) { // return if authToken is not found
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(401);
+                return gson.toJson(exceptionResponse);
+            } catch (Exception e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
+            }
+        });
 
+        // Logout endpoint
+        Spark.delete("/session", (req, res) -> {
+            LogoutRequest logoutRequest = new LogoutRequest(req.headers("Authorization"));
+            try {
+                service.logout(logoutRequest);
+                return "{}";
+            } catch (UnauthorizedException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(401);
+                return gson.toJson(exceptionResponse);
+            } catch (Exception e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
+            }
+        });
 
+        // List Games endpoint
+        Spark.get("/game", (req, res) -> {
+            ListGamesRequest listGamesRequest = new ListGamesRequest(req.headers("Authorization"));
+            try {
+                ListGamesResponse listGamesResponse = service.listGames(listGamesRequest);
+                return gson.toJson(listGamesResponse);
+            } catch (UnauthorizedException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(401);
+                return gson.toJson(exceptionResponse);
+            } catch (Exception e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
+            }
+
+        });
+
+        // Create Game endpoint
+        Spark.post("/game", (req, res) -> {
+            CreateGameRequest createGameRequest = gson.fromJson(req.body(), CreateGameRequest.class);
+            createGameRequest.setAuthToken(req.headers("Authorization"));
+            try {
+                CreateGameResponse createGameResponse = service.createGame(createGameRequest);
+                return gson.toJson(createGameResponse);
+            } catch (BadRequestException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(400);
+                return gson.toJson(exceptionResponse);
+            } catch (UnauthorizedException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(401);
+                return gson.toJson(exceptionResponse);
+            } catch (Exception e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
+            }
+        });
+
+        // Join Game endpoint
+        Spark.put("/game", (req, res) -> {
+            JoinGameRequest joinGameRequest = gson.fromJson(req.body(), JoinGameRequest.class);
+            joinGameRequest.setAuthToken(req.headers("Authorization"));
+            try {
+                service.joinGame(joinGameRequest);
+                return "{}";
+            } catch (BadRequestException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(400);
+                return gson.toJson(exceptionResponse);
+            } catch (UnauthorizedException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(401);
+                return gson.toJson(exceptionResponse);
+            } catch (AlreadyTakenException e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(403);
+                return gson.toJson(exceptionResponse);
+            } catch (Exception e) {
+                ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+                res.status(500);
+                return gson.toJson(exceptionResponse);
+            }
+        });
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -74,15 +173,5 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
-    }
-
-    private void exceptionHandler(ResponseException ex, Request req, Response res) {
-        res.status(ex.StatusCode());
-    }
-
-    private Object clearDB(Request req, Response res) throws ResponseException {
-        service.clearDB();
-        res.status(204);
-        return "";
     }
 }

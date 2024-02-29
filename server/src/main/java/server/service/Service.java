@@ -1,12 +1,19 @@
 package server.service;
 
+import chess.ChessGame;
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
-import model.AuthData;
-import model.UserData;
-import requests.RegisterRequest;
-import requests.RegisterResponse;
-
+import exception.AlreadyTakenException;
+import exception.BadRequestException;
+import exception.ResponseException;
+import exception.UnauthorizedException;
+import model.*;
+import request.*;
+import response.*;
+import response.LoginResponse;
+import response.RegisterResponse;
+import java.util.Random;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Service {
@@ -16,28 +23,104 @@ public class Service {
     public Service(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
     }
-    public void clearDB() throws DataAccessException {
-        try {
-            this.dataAccess.clearDB();
-        } catch (Exception e) {
-            System.out.println("clearDB failed");
-        }
-        // for register, must consider other exceptions
+    public void clearDB() throws DataAccessException, ResponseException {
+        this.dataAccess.clearDB();
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) {
-        try {
-            UserData userData = new UserData(registerRequest.getUsername(), registerRequest.getPassword(), registerRequest.getEmail());
-            if (dataAccess.getUser(userData) != null) {
-                throw new AlreadyTakenException("Username already taken");
-            } else {
-                dataAccess.createUser(userData);
-                AuthData authData = new AuthData(registerRequest.getUsername(), UUID.randomUUID().toString());
+    public RegisterResponse register(RegisterRequest registerRequest) throws ResponseException, AlreadyTakenException, BadRequestException {
+        if (registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getEmail() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        UserData userData = new UserData(registerRequest.getUsername(), registerRequest.getPassword(), registerRequest.getEmail());
+        if (dataAccess.getUser(userData) != null) {
+            throw new AlreadyTakenException("Error: already taken");
+        } else {
+            dataAccess.createUser(userData);
+            AuthData authData = new AuthData(registerRequest.getUsername(), UUID.randomUUID().toString());
 
+            dataAccess.createAuthToken(authData);
+            return new RegisterResponse(registerRequest.getUsername(), authData.authToken());
+
+        }
+    }
+
+    public LoginResponse login(LoginRequest loginRequest) throws ResponseException, UnauthorizedException { // where does unauthorized exception go?
+        UserData userData = new UserData(loginRequest.getUsername(), loginRequest.getPassword(), null);
+        if (dataAccess.getUser(userData) != null) {
+            // verify password
+            if (dataAccess.getUser(userData).password().equals(loginRequest.getPassword())) {
+                AuthData authData = new AuthData(loginRequest.getUsername(), UUID.randomUUID().toString());
                 dataAccess.createAuthToken(authData);
+                return new LoginResponse(loginRequest.getUsername(), authData.authToken());
+            } else {
+                throw new UnauthorizedException("Error: unauthorized");
             }
 
-
+        } else {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
     }
 
+    public void logout(LogoutRequest logoutRequest) throws ResponseException, UnauthorizedException {
+        if (dataAccess.getAuthToken(logoutRequest.getAuthToken()) != null) {
+            dataAccess.deleteAuthToken(dataAccess.getAuthToken(logoutRequest.getAuthToken()));
+        } else {
+            throw new UnauthorizedException("Error: unauthorized"); // does this go here?
+        }
+    }
+
+    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws UnauthorizedException, ResponseException {
+        if (dataAccess.getAuthToken(listGamesRequest.getAuthToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        return new ListGamesResponse(dataAccess.listGames(listGamesRequest.getAuthToken()));
+    }
+
+    public CreateGameResponse createGame(CreateGameRequest createGameRequest) throws UnauthorizedException, ResponseException, BadRequestException {
+        if (dataAccess.getAuthToken(createGameRequest.getAuthToken()) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        if (createGameRequest.getGameName() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        int ID = new Random().nextInt(1000000);
+        return new CreateGameResponse(dataAccess.createGame(new GameData(ID, null, null, createGameRequest.getGameName(), new ChessGame())).gameID()); // where do I get the gameName?, recommendations for gameID?
+    }
+
+    public void joinGame(JoinGameRequest joinGameRequest) throws UnauthorizedException, ResponseException, BadRequestException, AlreadyTakenException {
+        AuthData authData = dataAccess.getAuthToken(joinGameRequest.getAuthToken());
+        GameData gameData = dataAccess.getGame(joinGameRequest.getGameID());
+
+        if (authData == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        if (gameData == null
+                || (!Objects.equals(joinGameRequest.getPlayerColor(), "WHITE")
+                && !Objects.equals(joinGameRequest.getPlayerColor(), "BLACK")
+                && !Objects.equals(joinGameRequest.getPlayerColor(), null))) {
+
+            throw new BadRequestException("Error: bad request");
+        }
+        if (Objects.equals(joinGameRequest.getPlayerColor(), "WHITE") && gameData.whiteUsername() != null
+                || Objects.equals(joinGameRequest.getPlayerColor(), "BLACK") && gameData.blackUsername() != null) {
+
+            throw new AlreadyTakenException("Error: already taken");
+        }
+
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
+        String color = joinGameRequest.getPlayerColor();
+        GameData updatedGameData;
+        if (color == null) {
+            updatedGameData = new GameData(joinGameRequest.getGameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
+        } else if (color.equals("WHITE")) {
+            updatedGameData = new GameData(joinGameRequest.getGameID(), authData.username(), blackUsername, gameData.gameName(), gameData.game());
+        } else {
+            updatedGameData = new GameData(joinGameRequest.getGameID(), whiteUsername, authData.username(), gameData.gameName(), gameData.game());
+        }
+        dataAccess.updateGame(updatedGameData);
+        // how do I update when a move is made?
+        // Should it take in gameID or gameData?
+        // Where do I get black/white player names?
+    }
 }

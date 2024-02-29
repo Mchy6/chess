@@ -1,4 +1,4 @@
-package requests;
+package request;
 
 public class RegisterRequest {
     private String username;
