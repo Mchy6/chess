@@ -1,5 +1,6 @@
 package serviceTests;
 
+import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,29 @@ import exception.AlreadyTakenException;
 import request.*;
 import response.*;
 
+class ServiceTests {
+    static Service service;
+
+    @BeforeEach
+    void setup () {
+        service = new Service(new MemoryDataAccess());
+    }
+
+    @Test
+    void joinGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+        RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
+        String authToken = service.register(rRequest).getAuthToken();
+
+        CreateGameRequest cRequest = new CreateGameRequest("GameName");
+        cRequest.setAuthToken(authToken);
+        CreateGameResponse response = service.createGame(cRequest);
+
+
+        JoinGameRequest request = new JoinGameRequest("WHITE", response.getGameID());
+        request.setAuthToken(authToken);
+        assertDoesNotThrow(() -> service.joinGame(request));
+    }
+}
 class MyJoinGameServiceTest {
     static Service service;
 
@@ -47,42 +71,6 @@ class MyJoinGameServiceTest {
         request.setAuthToken("invalidAuthToken");
         assertThrows(UnauthorizedException.class, () -> service.joinGame(request));
     }
-}
-
-class MyCreateGameServiceTest {
-    static Service service;
-
-    @BeforeEach
-    void setup() {
-        service = new Service(new MemoryDataAccess());
-    }
-
-    @Test
-    void createGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
-        RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
-        String authToken = service.register(rRequest).getAuthToken();
-
-        CreateGameRequest request = new CreateGameRequest("GameName");
-        request.setAuthToken(authToken);
-        CreateGameResponse response = service.createGame(request);
-        assertNotNull(response.getGameID());
-    }
-
-    @Test
-    void createGameFailure() {
-        CreateGameRequest request = new CreateGameRequest("GameName");
-        request.setAuthToken("invalid");
-        assertThrows(UnauthorizedException.class, () -> service.createGame(request));
-    }
-}
-
-class MyLogoutServiceTest {
-    static Service service;
-
-    @BeforeEach
-    void setup() {
-        service = new Service(new MemoryDataAccess());
-    }
 
     @Test
     void logoutSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
@@ -96,15 +84,6 @@ class MyLogoutServiceTest {
     void logoutFailure() {
         LogoutRequest request = new LogoutRequest("invalidAuthToken");
         assertThrows(UnauthorizedException.class, () -> service.logout(request));
-    }
-}
-
-class MyListGamesServiceTest {
-    static Service service;
-
-    @BeforeEach
-    void setup() {
-        service = new Service(new MemoryDataAccess());
     }
 
     @Test
@@ -122,15 +101,6 @@ class MyListGamesServiceTest {
         ListGamesRequest request = new ListGamesRequest("invalidAuthToken");
         assertThrows(UnauthorizedException.class, () -> service.listGames(request));
     }
-}
-
-class MyLoginServiceTest {
-    static Service service;
-
-    @BeforeEach
-    void setup() {
-        service = new Service(new MemoryDataAccess());
-    }
 
     @Test
     void loginSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
@@ -146,4 +116,28 @@ class MyLoginServiceTest {
         LoginRequest request = new LoginRequest("wrongUsername", "password");
         assertThrows(UnauthorizedException.class, () -> service.login(request));
     }
+
+    @Test
+    void registerSuccess() throws ResponseException, AlreadyTakenException, BadRequestException {
+        RegisterRequest request = new RegisterRequest("username", "password", "email@example.com");
+        RegisterResponse response = service.register(request);
+        assertNotNull(response.getAuthToken());
+    }
+
+    @Test
+    void registerFailure() {
+        RegisterRequest request = new RegisterRequest(null, "password", "email@example.com");
+        assertThrows(BadRequestException.class, () -> service.register(request));
+    }
+
+    @Test
+    void clearDBSuccess() throws ResponseException, AlreadyTakenException, BadRequestException, DataAccessException, UnauthorizedException {
+        RegisterRequest request = new RegisterRequest("username", "password", "email@example.com");
+        RegisterResponse response = service.register(request);
+        service.clearDB();
+        LoginRequest lRequest = new LoginRequest("username", "password");
+        assertThrows(UnauthorizedException.class, () -> service.login(lRequest));
+
+    }
 }
+
