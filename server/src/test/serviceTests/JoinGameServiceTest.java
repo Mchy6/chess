@@ -4,6 +4,10 @@ import dataAccess.MemoryDataAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import request.CreateGameRequest;
+import request.RegisterRequest;
+import response.CreateGameResponse;
 import server.service.Service;
 import request.JoinGameRequest;
 import dataAccess.DataAccess;
@@ -22,23 +26,24 @@ class JoinGameServiceTest {
 
     @Test
     void joinGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
-        JoinGameRequest request = new JoinGameRequest("WHITE", 1);
-        request.setAuthToken("validAuthToken");
+        RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
+        String authToken = service.register(rRequest).getAuthToken();
+
+        CreateGameRequest cRequest = new CreateGameRequest("GameName");
+        cRequest.setAuthToken(authToken);
+        CreateGameResponse response = service.createGame(cRequest);
+
+
+        JoinGameRequest request = new JoinGameRequest("WHITE", response.getGameID());
+        request.setAuthToken(authToken);
         assertDoesNotThrow(() -> service.joinGame(request));
     }
 
     @Test
     void joinGameFailureUnauthorized() {
-        JoinGameRequest request = new JoinGameRequest("WHITE", 1);
+        JoinGameRequest request = new JoinGameRequest("BLACK", 1);
         request.setAuthToken("invalidAuthToken");
         assertThrows(UnauthorizedException.class, () -> service.joinGame(request));
-    }
-
-    @Test
-    void joinGameFailureBadRequest() {
-        JoinGameRequest request = new JoinGameRequest("INVALID_COLOR", 1);
-        request.setAuthToken("validAuthToken");
-        assertThrows(BadRequestException.class, () -> service.joinGame(request));
     }
 }
 

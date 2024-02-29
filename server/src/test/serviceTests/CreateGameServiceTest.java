@@ -1,19 +1,21 @@
 package serviceTests;
+
 import dataAccess.MemoryDataAccess;
 import exception.AlreadyTakenException;
-import exception.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import request.RegisterRequest;
 import server.service.Service;
-import request.LogoutRequest;
+import request.CreateGameRequest;
+import response.CreateGameResponse;
 import dataAccess.DataAccess;
 import exception.ResponseException;
 import exception.UnauthorizedException;
+import exception.BadRequestException;
 
-class LogoutServiceTest {
+class CreateGameServiceTest {
     static Service service;
 
     @BeforeEach
@@ -22,17 +24,20 @@ class LogoutServiceTest {
     }
 
     @Test
-    void logoutSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void createGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         String authToken = service.register(rRequest).getAuthToken();
-        LogoutRequest request = new LogoutRequest(authToken);
-        assertDoesNotThrow(() -> service.logout(request));
+
+        CreateGameRequest request = new CreateGameRequest("GameName");
+        request.setAuthToken(authToken);
+        CreateGameResponse response = service.createGame(request);
+        assertNotNull(response.getGameID());
     }
 
     @Test
-    void logoutFailure() {
-        LogoutRequest request = new LogoutRequest("invalidAuthToken");
-        assertThrows(UnauthorizedException.class, () -> service.logout(request));
+    void createGameFailure() {
+        CreateGameRequest request = new CreateGameRequest("GameName");
+        request.setAuthToken("invalid");
+        assertThrows(UnauthorizedException.class, () -> service.createGame(request));
     }
 }
-
