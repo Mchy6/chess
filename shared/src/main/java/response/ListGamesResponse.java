@@ -16,6 +16,10 @@ public class ListGamesResponse {
     public String getMessage() {
         return message;
     }
+
+    public Collection<GameData> getGames() {
+        return games;
+    }
 }
 
 
