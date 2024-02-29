@@ -41,29 +41,6 @@ class ServiceTests {
         request.setAuthToken(authToken);
         assertDoesNotThrow(() -> service.joinGame(request));
     }
-}
-class MyJoinGameServiceTest {
-    static Service service;
-
-    @BeforeEach
-    void setup() {
-        service = new Service(new MemoryDataAccess());
-    }
-
-    @Test
-    void joinGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
-        RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
-        String authToken = service.register(rRequest).getAuthToken();
-
-        CreateGameRequest cRequest = new CreateGameRequest("GameName");
-        cRequest.setAuthToken(authToken);
-        CreateGameResponse response = service.createGame(cRequest);
-
-
-        JoinGameRequest request = new JoinGameRequest("WHITE", response.getGameID());
-        request.setAuthToken(authToken);
-        assertDoesNotThrow(() -> service.joinGame(request));
-    }
 
     @Test
     void joinGameFailureUnauthorized() {
@@ -138,6 +115,24 @@ class MyJoinGameServiceTest {
         LoginRequest lRequest = new LoginRequest("username", "password");
         assertThrows(UnauthorizedException.class, () -> service.login(lRequest));
 
+    }
+
+    @Test
+    void createGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+        RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
+        String authToken = service.register(rRequest).getAuthToken();
+
+        CreateGameRequest request = new CreateGameRequest("GameName");
+        request.setAuthToken(authToken);
+        CreateGameResponse response = service.createGame(request);
+        assertNotNull(response.getGameID());
+    }
+
+    @Test
+    void createGameFailure() {
+        CreateGameRequest request = new CreateGameRequest("GameName");
+        request.setAuthToken("invalid");
+        assertThrows(UnauthorizedException.class, () -> service.createGame(request));
     }
 }
 
