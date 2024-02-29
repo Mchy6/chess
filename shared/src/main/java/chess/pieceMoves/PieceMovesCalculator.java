@@ -32,6 +32,8 @@ public abstract class PieceMovesCalculator {
         return new ArrayList<>(); // should return list of valid moves
     }
 
+    
+
 //    public abstract Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition);
 }
 

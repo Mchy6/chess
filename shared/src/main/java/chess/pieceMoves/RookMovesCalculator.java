@@ -10,67 +10,43 @@ import java.util.Collection;
 
 public class RookMovesCalculator extends PieceMovesCalculator {
 
-    //    @Override
     public static Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> rookMoves = new ArrayList<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-        ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
 
         // Up
-        for (int i = col + 1; i <= 8; i++) {
-            ChessPosition position = new ChessPosition(row, i);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
-
+        addMovesInDirection(board, myPosition, 0, 1, rookMoves);
         // Down
-        for (int i = col - 1; i >= 1; i--) {
-            ChessPosition position = new ChessPosition(row, i);
-
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
-
+        addMovesInDirection(board, myPosition, 0, -1, rookMoves);
         // Left
-        for (int i = row - 1; i >= 1; i--) {
-            ChessPosition position = new ChessPosition(i, col);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
-
-        // Up
-        for (int i = row + 1; i <= 8; i++) {
-            ChessPosition position = new ChessPosition(i, col);
-
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                rookMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
+        addMovesInDirection(board, myPosition, -1, 0, rookMoves);
+        // Right
+        addMovesInDirection(board, myPosition, 1, 0, rookMoves);
 
         return rookMoves;
+    }
+
+    private static void addMovesInDirection(ChessBoard board, ChessPosition myPosition, int rowIncrement, int colIncrement, Collection<ChessMove> moves) {
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
+
+        int newRow = row + rowIncrement;
+        int newCol = col + colIncrement;
+
+        while (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+            ChessPosition newPosition = new ChessPosition(newRow, newCol);
+            if (board.getPiece(newPosition) != null) {
+                if (pieceColor != board.getPiece(newPosition).getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+                break; // Stop if there's a piece in the way
+            } else {
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            newRow += rowIncrement;
+            newCol += colIncrement;
+        }
     }
 }

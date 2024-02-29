@@ -10,63 +10,41 @@ import java.util.Collection;
 
 public class BishopMovesCalculator extends PieceMovesCalculator {
 
-//    @Override
     public static Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> bishopMoves = new ArrayList<>();
+
+        // Bottom left
+        addDiagonalMoves(board, myPosition, -1, -1, bishopMoves);
+        // Top left
+        addDiagonalMoves(board, myPosition, -1, 1, bishopMoves);
+        // Bottom right
+        addDiagonalMoves(board, myPosition, 1, -1, bishopMoves);
+        // Top right
+        addDiagonalMoves(board, myPosition, 1, 1, bishopMoves);
+
+        return bishopMoves;
+    }
+
+    private static void addDiagonalMoves(ChessBoard board, ChessPosition myPosition, int rowIncrement, int colIncrement, Collection<ChessMove> moves) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
-        // Bottom left
-        for (int i = row - 1, j = col - 1; i >= 1 && j >= 1; i--, j--) {
-            ChessPosition position = new ChessPosition(i, j);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
 
-        // Top left
-        for (int i = row - 1, j = col + 1; i >= 1 && j <= 8; i--, j++) {
-            ChessPosition position = new ChessPosition(i, j);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
+        int newRow = row + rowIncrement;
+        int newCol = col + colIncrement;
 
-        // Bottom right
-        for (int i = row + 1, j = col - 1; i <= 8 && j >= 1; i++, j--) {
-            ChessPosition position = new ChessPosition(i, j);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
+        while (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+            ChessPosition newPosition = new ChessPosition(newRow, newCol);
+            if (board.getPiece(newPosition) != null) {
+                if (pieceColor != board.getPiece(newPosition).getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+                break; // Stop if there's a piece in the way
             } else {
-                break;
+                moves.add(new ChessMove(myPosition, newPosition, null));
             }
+            newRow += rowIncrement;
+            newCol += colIncrement;
         }
-
-        // Top right
-        for (int i = row + 1, j = col + 1; i <= 8 && j <= 8; i++, j++) {
-            ChessPosition position = new ChessPosition(i, j);
-            if (board.getPiece(position) != null && pieceColor != board.getPiece(position).getTeamColor()) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-                break;
-            } else if (board.getPiece(position) == null) {
-                bishopMoves.add(new ChessMove(myPosition, position, null));
-            } else {
-                break;
-            }
-        }
-        return bishopMoves;
     }
 }
