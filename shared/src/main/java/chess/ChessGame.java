@@ -112,6 +112,7 @@ public class ChessGame {
 
     }
 
+
     /**
      * Determines if the given team is in check
      *
@@ -164,16 +165,8 @@ public class ChessGame {
         return null;
     }
 
-    /**
-     * Determines if the given team is in checkmate
-     *
-     * @param teamColor which team to check for checkmate
-     * @return True if the specified team is in checkmate
-     */
-    public boolean isInCheckmate(TeamColor teamColor) {
+    private Collection<ChessMove> addAllMoves(TeamColor teamColor) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-
-        // Iterate over all pieces on the board
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j++) {
                 ChessPiece piece = this.board.getPiece(new ChessPosition(i, j));
@@ -184,6 +177,17 @@ public class ChessGame {
                 }
             }
         }
+        return allMoves;
+    }
+
+    /**
+     * Determines if the given team is in checkmate
+     *
+     * @param teamColor which team to check for checkmate
+     * @return True if the specified team is in checkmate
+     */
+    public boolean isInCheckmate(TeamColor teamColor) {
+        Collection<ChessMove> allMoves = addAllMoves(teamColor);
 
         // Check for checkmate
         if (isInCheck(teamColor) && allMoves.isEmpty()) {
@@ -201,22 +205,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        Collection<ChessMove> allMoves = new ArrayList<>();
-
-        // Iterate over all pieces on the board
-        for (int i = 1; i < 9; i++) {
-            for (int j = 1; j < 9; j++) {
-                ChessPiece piece = this.board.getPiece(new ChessPosition(i, j));
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    ChessPosition currentPosition = new ChessPosition(i, j);
-
-
-
-                    // Collect all moves for the piece
-                    allMoves.addAll(validMoves(currentPosition));
-                }
-            }
-        }
+        Collection<ChessMove> allMoves = addAllMoves(teamColor);
 
         // Check for stalemate
         if (!isInCheck(teamColor) && allMoves.isEmpty()) {

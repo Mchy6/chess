@@ -36,12 +36,6 @@ public class ChessMove {
 
     @Override
     public String toString() {
-//        final StringBuilder sb = new StringBuilder("{");
-////        sb.append("startPosition=").append(startPosition);
-//        sb.append("").append(endPosition);
-////        sb.append(", promotionPiece=").append(promotionPiece);
-//        sb.append('}');
-//        return sb.toString();
         return endPosition.toString();
     }
 

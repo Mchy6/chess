@@ -41,11 +41,6 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-//        final StringBuilder sb = new StringBuilder("{");
-//        sb.append("row=").append(row);
-//        sb.append(", col=").append(col);
-//        sb.append('}');
-//        return sb.toString();
         return "(" + row + ", " + col + ")";
     }
 
