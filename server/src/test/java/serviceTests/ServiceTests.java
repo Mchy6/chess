@@ -1,4 +1,4 @@
-package java.passoffTests.serviceTests;
+package serviceTests.serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
