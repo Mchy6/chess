@@ -5,7 +5,6 @@ import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
-import exception.ResponseException;
 import exception.UnauthorizedException;
 import model.*;
 import request.*;
@@ -23,11 +22,11 @@ public class Service {
     public Service(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
     }
-    public void clearDB() throws DataAccessException, ResponseException {
+    public void clearDB() throws DataAccessException {
         this.dataAccess.clearDB();
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) throws ResponseException, AlreadyTakenException, BadRequestException {
+    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException, BadRequestException {
         if (registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getEmail() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -44,7 +43,7 @@ public class Service {
         }
     }
 
-    public LoginResponse login(LoginRequest loginRequest) throws ResponseException, UnauthorizedException { // where does unauthorized exception go?
+    public LoginResponse login(LoginRequest loginRequest) throws DataAccessException, UnauthorizedException { // where does unauthorized exception go?
         UserData userData = new UserData(loginRequest.getUsername(), loginRequest.getPassword(), null);
         if (dataAccess.getUser(userData) != null) {
             // verify password
@@ -61,7 +60,7 @@ public class Service {
         }
     }
 
-    public void logout(LogoutRequest logoutRequest) throws ResponseException, UnauthorizedException {
+    public void logout(LogoutRequest logoutRequest) throws DataAccessException, UnauthorizedException {
         if (dataAccess.getAuthToken(logoutRequest.getAuthToken()) != null) {
             dataAccess.deleteAuthToken(dataAccess.getAuthToken(logoutRequest.getAuthToken()));
         } else {
@@ -69,14 +68,14 @@ public class Service {
         }
     }
 
-    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws UnauthorizedException, ResponseException {
+    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws UnauthorizedException, DataAccessException {
         if (dataAccess.getAuthToken(listGamesRequest.getAuthToken()) == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }
         return new ListGamesResponse(dataAccess.listGames(listGamesRequest.getAuthToken()));
     }
 
-    public CreateGameResponse createGame(CreateGameRequest createGameRequest) throws UnauthorizedException, ResponseException, BadRequestException {
+    public CreateGameResponse createGame(CreateGameRequest createGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException {
         if (dataAccess.getAuthToken(createGameRequest.getAuthToken()) == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }
@@ -87,7 +86,7 @@ public class Service {
         return new CreateGameResponse(dataAccess.createGame(new GameData(ID, null, null, createGameRequest.getGameName(), new ChessGame())).gameID()); // where do I get the gameName?, recommendations for gameID?
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws UnauthorizedException, ResponseException, BadRequestException, AlreadyTakenException {
+    public void joinGame(JoinGameRequest joinGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException, AlreadyTakenException {
         AuthData authData = dataAccess.getAuthToken(joinGameRequest.getAuthToken());
         GameData gameData = dataAccess.getGame(joinGameRequest.getGameID());
 
@@ -122,5 +121,9 @@ public class Service {
         // how do I update when a move is made?
         // Should it take in gameID or gameData?
         // Where do I get black/white player names?
+    }
+
+    public String hashPassword(String password) {
+        return password;
     }
 }

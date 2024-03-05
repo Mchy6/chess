@@ -41,10 +41,39 @@ public class DatabaseManager {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
+
+            // conn.setCatalog("chess");
+
+            var createUserTable = """
+            CREATE TABLE  IF NOT EXISTS userData (
+                username VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                PRIMARY KEY (username)
+            )""";
+
+            var createAuthTable = """
+            CREATE TABLE  IF NOT EXISTS authData (
+                authToken VARCHAR(255) NOT NULL,
+                username VARCHAR(255) NOT NULL,
+                PRIMARY KEY (authToken)
+            )""";
+
+            var createGameTable = """
+            CREATE TABLE  IF NOT EXISTS gameData (
+                gameID INT NOT NULL AUTO_INCREMENT,
+                whiteUsername VARCHAR(255) NOT NULL,
+                blackUsername VARCHAR(255) NOT NULL,
+                gameName VARCHAR(255) NOT NULL,
+                game JSON NOT NULL,
+                PRIMARY KEY (gameID)
+            )""";
+
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
     }
+
 
     /**
      * Create a connection to the database and sets the catalog based upon the
