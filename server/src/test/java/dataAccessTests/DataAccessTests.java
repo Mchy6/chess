@@ -83,9 +83,27 @@ class DataAccessTests {
     public void getAuthTokenSuccess() throws DataAccessException {
         MySqlDataAccess dataAccess = new MySqlDataAccess();
         AuthData authData = new AuthData("username", "authToken");
-
-        assertNotNull(dataAccess.createAuthToken(authData));
+        dataAccess.createAuthToken(authData);
+        assertNotNull(dataAccess.getAuthToken(authData.authToken()));
     }
 
-    public void
+    @Test
+    public void getAuthTokenFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        AuthData authData = new AuthData("username12341", "authToken1234123");
+//        dataAccess.getAuthToken(authData.authToken());
+        assertNull(dataAccess.getAuthToken(authData.authToken()));
+    }
+
+    @Test
+    public void deleteAuthTokenSuccess() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        AuthData authData = new AuthData("username", "authToken");
+        dataAccess.createAuthToken(authData);
+        dataAccess.deleteAuthToken(authData);
+        assertNull(dataAccess.getAuthToken(authData.authToken()));
+    }
+
+
+
 }
