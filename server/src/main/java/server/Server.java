@@ -24,6 +24,7 @@ public class Server {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+//        service = new Service(new MemoryDataAccess());
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
