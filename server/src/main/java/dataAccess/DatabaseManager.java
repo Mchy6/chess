@@ -69,15 +69,16 @@ public class DatabaseManager {
                 PRIMARY KEY (gameID)
             )""";
 
-//            try (var conn = DatabaseManager.getConnection()) {
-//                for (var statement : createStatements) {
-//                    try (var preparedStatement = conn.prepareStatement(statement)) {
-//                        preparedStatement.executeUpdate(); // modify to call each dao
-//                    }
-//                }
-//            } catch (SQLException ex) {
-//                throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-//            }
+            try (var preparedStatement = conn.prepareStatement(createUserTable)) {
+                preparedStatement.executeUpdate();
+            }
+            try (var preparedStatement = conn.prepareStatement(createAuthTable)) {
+                preparedStatement.executeUpdate();
+            }
+            try (var preparedStatement = conn.prepareStatement(createGameTable)) {
+                preparedStatement.executeUpdate();
+            }
+
 
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
