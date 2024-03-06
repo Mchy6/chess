@@ -30,6 +30,13 @@ class DataAccessTests {
     }
 
     @Test
+    public void clearDBFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        dataAccess.clearDB();
+        assertDoesNotThrow(dataAccess::clearDB);
+    }
+
+    @Test
     public void getUserFailure() throws DataAccessException {
         MySqlDataAccess dataAccess = new MySqlDataAccess();
         UserData nonExistentUser = new UserData("nonExistentUser", "noPassword", "noemail@example.com");
