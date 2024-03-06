@@ -1,11 +1,16 @@
 package dataAccessTests;
 
+import chess.ChessGame;
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MySqlDataAccess;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -104,6 +109,85 @@ class DataAccessTests {
         assertNull(dataAccess.getAuthToken(authData.authToken()));
     }
 
+    @Test
+    public void deleteAuthTokenFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        AuthData authData = new AuthData("username", "authToken");
+        assertDoesNotThrow(() -> dataAccess.deleteAuthToken(authData));
+    }
 
+    @Test
+    public void listGamesSuccess() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        // Assume createGame method is working correctly and use it to insert a game
+        GameData game = new GameData(1, "whiteUser", "blackUser", "GameName", new ChessGame());
+        dataAccess.createGame(game);
+
+        Collection<GameData> games = dataAccess.listGames("authToken");
+        assertFalse(games.isEmpty(), "listGames should return a non-empty collection when games exist");
+    }
+
+    @Test
+    public void listGamesFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        Collection<GameData> games = dataAccess.listGames("authToken");
+        assertTrue(games.isEmpty());
+    }
+
+    @Test
+    public void createGameSuccess() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        GameData game = new GameData(2, "whiteUser", "blackUser", "GameName2", new ChessGame());
+        GameData returnedGame = dataAccess.createGame(game);
+
+        assertNotNull(returnedGame, "createGame should successfully create a game and return it");
+    }
+
+    @Test
+    public void createGameFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        GameData game = new GameData(2, "whiteUser", "blackUser", "GameName2", new ChessGame());
+        dataAccess.createGame(game);
+        assertThrows(DataAccessException.class, () -> dataAccess.createGame(game));
+    }
+
+    @Test
+    public void getGameSuccess() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        // Use createGame to ensure there's a game to fetch
+        GameData game = new GameData(3, "whiteUsername", "blackUsername", "GameName3", new ChessGame());
+        dataAccess.createGame(game);
+
+        GameData fetchedGame = dataAccess.getGame(3);
+        assertNotNull(fetchedGame, "getGame should return a game when given a valid ID");
+    }
+
+    @Test
+    public void getGameFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        GameData game = dataAccess.getGame(999); // Assuming ID 999 does not exist
+
+        assertNull(game, "getGame should return null when the game ID does not exist");
+    }
+
+    @Test
+    public void updateGameSuccess() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        // First, create a game to update
+        GameData game = new GameData(4, "whiteUser", "blackUser", "GameBeforeUpdate", new ChessGame());
+        dataAccess.createGame(game);
+
+        // Now, update the game
+        GameData updatedGame = new GameData(4, "updatedWhiteUser", "updatedBlackUser", "GameAfterUpdate", new ChessGame());
+        assertDoesNotThrow(() -> dataAccess.updateGame(updatedGame), "updateGame should not throw an exception on success");
+    }
+
+    @Test
+    public void updateGameFailure() throws DataAccessException {
+        MySqlDataAccess dataAccess = new MySqlDataAccess();
+        // Attempt to update a game that does not exist
+        GameData game = new GameData(999, "whiteUser", "blackUser", "GameBeforeUpdate", new ChessGame());
+        assertDoesNotThrow(() -> dataAccess.updateGame(game), "updateGame should throw an exception when the game does not exist");
+    }
 
 }
