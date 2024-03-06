@@ -42,7 +42,7 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
 
-             conn.setCatalog("chess");
+             conn.setCatalog(databaseName);
 
             var createUserTable = """
             CREATE TABLE  IF NOT EXISTS userData (
