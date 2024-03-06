@@ -54,8 +54,8 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public AuthData createAuthToken(AuthData authData) throws DataAccessException {
-        String sql = "INSERT INTO authData (authToken, username) VALUES (?, ?)";
-        executeUpdate(sql, authData.authToken(), authData.username());
+        String sql = "INSERT INTO authData (username, authToken) VALUES (?, ?)";
+        executeUpdate(sql, authData.username(), authData.authToken());
         return authData;
     }
 
@@ -68,7 +68,7 @@ public class MySqlDataAccess implements DataAccess {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     // Assuming AuthData constructor or a method to instantiate it from these fields
-                    return new AuthData(rs.getString("authToken"), rs.getString("username"));
+                    return new AuthData(rs.getString("username"), rs.getString("authToken"));
                 }
             }
         } catch (SQLException | DataAccessException e) {
@@ -109,12 +109,12 @@ public class MySqlDataAccess implements DataAccess {
         return games;
 
     }
-
+//int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game
     @Override
     public GameData createGame(GameData gameData) throws DataAccessException {
-        String sql = "INSERT INTO gameData (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
         var json = new Gson().toJson(gameData); // Assuming gameData has a method to convert itself to JSON
-        executeUpdate(sql, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
+        executeUpdate(sql, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
         return gameData;
     }
 
@@ -171,6 +171,7 @@ public class MySqlDataAccess implements DataAccess {
                 return 0;
             }
         } catch (SQLException | DataAccessException e) {
+            e.printStackTrace();
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
