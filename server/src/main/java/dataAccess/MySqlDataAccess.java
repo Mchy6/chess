@@ -1,5 +1,6 @@
 package dataAccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -12,10 +13,11 @@ import static dataAccess.DatabaseManager.createDatabase;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
-public class ChessSqlDataAccess implements DataAccess {
+public class MySqlDataAccess implements DataAccess {
 
-    public ChessSqlDataAccess() throws DataAccessException, DataAccessException {
+    public MySqlDataAccess() throws DataAccessException, DataAccessException {
         createDatabase();
+
     }
 
     @Override
@@ -83,26 +85,27 @@ public class ChessSqlDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames(String authToken) throws DataAccessException {
-        Collection<GameData> games = new ArrayList<>();
-        String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gameData";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                // Assuming GameData can be instantiated from these fields, possibly needing JSON conversion
-                GameData gameData = new Gson().fromJson(rs.getString("game"), GameData.class);
-                gameData = gameData.setGameID(rs.getInt("gameID"))
-                        .setWhiteUsername(rs.getString("whiteUsername"))
-                        .setBlackUsername(rs.getString("blackUsername"))
-                        .setGameName(rs.getString("gameName"));
-                games.add(gameData);
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Unable to read gameData: " + e.getMessage());
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return games;
+//        Collection<GameData> games = new ArrayList<>();
+//        String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gameData";
+//        try (Connection conn = DatabaseManager.getConnection();
+//             PreparedStatement ps = conn.prepareStatement(sql);
+//             ResultSet rs = ps.executeQuery()) {
+//            while (rs.next()) {
+//                // Assuming GameData can be instantiated from these fields, possibly needing JSON conversion
+//                GameData gameData = new Gson().fromJson(rs.getString("game"), GameData.class);
+//                gameData = gameData.setGameID(rs.getInt("gameID"))
+//                        .setWhiteUsername(rs.getString("whiteUsername"))
+//                        .setBlackUsername(rs.getString("blackUsername"))
+//                        .setGameName(rs.getString("gameName"));
+//                games.add(gameData);
+//            }
+//        } catch (SQLException e) {
+//            throw new DataAccessException("Unable to read gameData: " + e.getMessage());
+//        } catch (DataAccessException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return games;
+        return null;
     }
 
     @Override
@@ -115,24 +118,30 @@ public class ChessSqlDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gameData WHERE gameID = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, gameID);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    // Assuming GameData can be instantiated from these fields, possibly needing JSON conversion
-                    GameData gameData = new Gson().fromJson(rs.getString("game"), GameData.class);
-                    gameData = gameData.setGameID(rs.getInt("gameID"))
-                            .setWhiteUsername(rs.getString("whiteUsername"))
-                            .setBlackUsername(rs.getString("blackUsername"))
-                            .setGameName(rs.getString("gameName"));
-                    return gameData;
-                }
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Unable to read gameData: " + e.getMessage());
-        }
+//        String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gameData WHERE gameID = ?";
+//        try (Connection conn = DatabaseManager.getConnection();
+//             PreparedStatement ps = conn.prepareStatement(sql)) {
+//            ps.setInt(1, gameID);
+//            try (ResultSet rs = ps.executeQuery()) {
+//                if (rs.next()) {
+//                    // Assuming GameData can be instantiated from these fields, possibly needing JSON conversion
+//                    ChessGame chessGame = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+////                    gameData = gameData.setGameID(rs.getInt("gameID"))
+////                            .setWhiteUsername(rs.getString("whiteUsername"))
+////                            .setBlackUsername(rs.getString("blackUsername"))
+////                            .setGameName(rs.getString("gameName"));
+//                    int newGameID = rs.getInt("gameID");
+//                    gameData.whiteUsername() = rs.getString("whiteUsername");
+//                    gameData.blackUsername() = rs.getString("blackUsername");
+//                    gameData.gameName() = rs.getString("gameName");
+//
+//
+//                    return new GameData(newGameID, ...);
+//                }
+//            }
+//        } catch (SQLException | DataAccessException e) {
+//            throw new DataAccessException("Unable to read gameData: " + e.getMessage());
+//        }
         return null;
     }
 

@@ -28,7 +28,7 @@ class ServiceTests {
     }
 
     @Test
-    void joinGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void joinGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         String authToken = service.register(rRequest).getAuthToken();
 
@@ -50,7 +50,7 @@ class ServiceTests {
     }
 
     @Test
-    void logoutSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void logoutSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         String authToken = service.register(rRequest).getAuthToken();
         LogoutRequest request = new LogoutRequest(authToken);
@@ -64,7 +64,7 @@ class ServiceTests {
     }
 
     @Test
-    void listGamesSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void listGamesSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         String authToken = service.register(rRequest).getAuthToken();
 
@@ -80,7 +80,7 @@ class ServiceTests {
     }
 
     @Test
-    void loginSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void loginSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         RegisterResponse rResponse = service.register(rRequest);
         LoginRequest lRequest = new LoginRequest("username", "password");
@@ -95,7 +95,7 @@ class ServiceTests {
     }
 
     @Test
-    void registerSuccess() throws ResponseException, AlreadyTakenException, BadRequestException {
+    void registerSuccess() throws ResponseException, AlreadyTakenException, BadRequestException, DataAccessException {
         RegisterRequest request = new RegisterRequest("username", "password", "email@example.com");
         RegisterResponse response = service.register(request);
         assertNotNull(response.getAuthToken());
@@ -118,7 +118,7 @@ class ServiceTests {
     }
 
     @Test
-    void createGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException {
+    void createGameSuccess() throws ResponseException, UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         RegisterRequest rRequest = new RegisterRequest("username", "password", "email@example.com");
         String authToken = service.register(rRequest).getAuthToken();
 

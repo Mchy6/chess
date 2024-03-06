@@ -98,6 +98,7 @@ public class PersistenceTests {
 
             Object obj = clazz.getDeclaredConstructor().newInstance();
             try (Connection conn = (Connection) getConnectionMethod.invoke(obj);) {
+//            try (Connection conn = dataAccess.DatabaseManager.getConnection()) {
                 try (var statement = conn.createStatement()) {
                     for (String table : getTables(conn)) {
                         var sql = "SELECT count(*) FROM " + table;

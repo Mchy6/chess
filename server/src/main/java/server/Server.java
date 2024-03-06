@@ -1,7 +1,9 @@
 package server;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import exception.*;
 import request.*;
 import response.*;
@@ -16,7 +18,12 @@ public class Server {
 
 
     public Server() {
-        service = new Service(new MemoryDataAccess());
+        try {
+        service = new Service(new MySqlDataAccess());
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);

@@ -34,7 +34,7 @@ public class DatabaseManager {
     /**
      * Creates the database if it does not already exist.
      */
-    static void createDatabase() throws DataAccessException {
+    public static void createDatabase() throws DataAccessException {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
             var conn = DriverManager.getConnection(connectionUrl, user, password);
@@ -42,7 +42,7 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
 
-            // conn.setCatalog("chess");
+             conn.setCatalog("chess");
 
             var createUserTable = """
             CREATE TABLE  IF NOT EXISTS userData (
@@ -69,6 +69,16 @@ public class DatabaseManager {
                 PRIMARY KEY (gameID)
             )""";
 
+//            try (var conn = DatabaseManager.getConnection()) {
+//                for (var statement : createStatements) {
+//                    try (var preparedStatement = conn.prepareStatement(statement)) {
+//                        preparedStatement.executeUpdate(); // modify to call each dao
+//                    }
+//                }
+//            } catch (SQLException ex) {
+//                throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
+//            }
+
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
@@ -87,7 +97,7 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    static Connection getConnection() throws DataAccessException {
+    public static Connection getConnection() throws DataAccessException {
         try {
             var conn = DriverManager.getConnection(connectionUrl, user, password);
             conn.setCatalog(databaseName);

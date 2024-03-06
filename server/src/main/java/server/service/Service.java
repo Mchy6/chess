@@ -7,6 +7,7 @@ import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.UnauthorizedException;
 import model.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import request.*;
 import response.*;
 import response.LoginResponse;
@@ -30,7 +31,11 @@ public class Service {
         if (registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getEmail() == null) {
             throw new BadRequestException("Error: bad request");
         }
-        UserData userData = new UserData(registerRequest.getUsername(), registerRequest.getPassword(), registerRequest.getEmail());
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedPassword = encoder.encode(registerRequest.getPassword());
+
+        UserData userData = new UserData(registerRequest.getUsername(), hashedPassword, registerRequest.getEmail());
         if (dataAccess.getUser(userData) != null) {
             throw new AlreadyTakenException("Error: already taken");
         } else {
@@ -47,7 +52,12 @@ public class Service {
         UserData userData = new UserData(loginRequest.getUsername(), loginRequest.getPassword(), null);
         if (dataAccess.getUser(userData) != null) {
             // verify password
-            if (dataAccess.getUser(userData).password().equals(loginRequest.getPassword())) {
+
+            var password = loginRequest.getPassword();
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+//            if (dataAccess.getUser(userData).password().equals(loginRequest.getPassword())) {
+            if (encoder.matches(password, dataAccess.getUser(userData).password())) {
                 AuthData authData = new AuthData(loginRequest.getUsername(), UUID.randomUUID().toString());
                 dataAccess.createAuthToken(authData);
                 return new LoginResponse(loginRequest.getUsername(), authData.authToken());
