@@ -7,6 +7,7 @@ import exception.ResponseException;
 //import client.websocket.NotificationHandler;
 import server.ServerFacade;
 //import client.websocket.WebSocketFacade;
+import static ui.EscapeSequences.*;
 
 public class ChessClient {
     private String visitorName = null;
@@ -60,19 +61,41 @@ public class ChessClient {
 
     public String help() {
         if (state == State.SIGNEDOUT) {
-            return """
-                    - signIn <yourname>
-                    - quit
-                    """;
+            return SET_TEXT_COLOR_BLUE + """
+                    register <USERNAME> <PASSWORD> <EMAIL>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - to create an account""" + SET_TEXT_COLOR_BLUE + """
+                    
+                    login <USERNAME> <PASSWORD>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - to play chess""" + SET_TEXT_COLOR_BLUE + """
+                    
+                    quit""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - playing chess""" + SET_TEXT_COLOR_BLUE + """
+                    
+                    help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - with possible commands""" + RESET_TEXT_COLOR;
         }
+        // create, list, join, observe, logout, quit, help
         return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
-                """;
+                create <NAME>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - a game""" + SET_TEXT_COLOR_BLUE + """
+                
+                list""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - games""" + SET_TEXT_COLOR_BLUE + """
+                
+                join <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - a game""" + SET_TEXT_COLOR_BLUE + """
+                
+                observe <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - a game""" + SET_TEXT_COLOR_BLUE + """
+                
+                logout""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - when you are done""" + SET_TEXT_COLOR_BLUE + """
+                
+                quit""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - playing chess""" + SET_TEXT_COLOR_BLUE + """
+                
+                help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - with possible commands""" + RESET_TEXT_COLOR;
     }
 
     private void assertSignedIn() throws ResponseException {

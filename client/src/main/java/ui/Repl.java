@@ -15,7 +15,7 @@ public class Repl {
     }
 
     public void run() {
-        System.out.println("\uD83D\uDC36 Welcome to the pet store. Sign in to start.");
+        System.out.println(WHITE_QUEEN + "Welcome to 240 Chess. Type Help to get started." + WHITE_QUEEN);
         System.out.print(client.help());
 
         Scanner scanner = new Scanner(System.in);
@@ -26,7 +26,7 @@ public class Repl {
 
             try {
                 result = client.eval(line);
-                System.out.print("BLUE" + result);
+                System.out.print(result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -36,7 +36,7 @@ public class Repl {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + "RESET" + ">>> " + "GREEN");
+        System.out.print("\n" + SET_TEXT_COLOR_WHITE +  "LOGGED_OUT" + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
     }
 
 }
