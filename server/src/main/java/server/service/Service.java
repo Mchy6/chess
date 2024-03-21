@@ -87,13 +87,14 @@ public class Service {
 
     public CreateGameResponse createGame(CreateGameRequest createGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException {
         if (dataAccess.getAuthToken(createGameRequest.getAuthToken()) == null) {
+            System.out.println("Printed Error: unauthorized");
             throw new UnauthorizedException("Error: unauthorized");
         }
         if (createGameRequest.getGameName() == null) {
             throw new BadRequestException("Error: bad request");
         }
         int ID = new Random().nextInt(1000000);
-        return new CreateGameResponse(dataAccess.createGame(new GameData(ID, null, null, createGameRequest.getGameName(), new ChessGame())).gameID()); // where do I get the gameName?, recommendations for gameID?
+        return new CreateGameResponse(dataAccess.createGame(new GameData(ID, null, null, createGameRequest.getGameName(), new ChessGame())).gameID());
     }
 
     public void joinGame(JoinGameRequest joinGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException, AlreadyTakenException {

@@ -1,19 +1,23 @@
 package ui;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import com.google.gson.Gson;
 import exception.ResponseException;
 //import client.websocket.NotificationHandler;
 import server.ServerFacade;
 //import client.websocket.WebSocketFacade;
 import static ui.EscapeSequences.*;
+import model.GameData;
 
 public class ChessClient {
     private String username = null;
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.LOGGEDOUT;
+    private String authToken;
+
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -28,11 +32,11 @@ public class ChessClient {
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
-//                case "rescue" -> rescuePet(params);
-//                case "list" -> listPets();
-//                case "signout" -> signOut();
-//                case "adopt" -> adoptPet(params);
-//                case "adoptall" -> adoptAllPets();
+                case "create" -> create(params);
+                case "list" -> list();
+//                case "join" -> join(params);
+//                case "observe" -> observe(params);
+//                case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -46,23 +50,54 @@ public class ChessClient {
             var username = params[0];
             var password = params[1];
             var email = params[2];
-            server.register(username, password, email);
+            var response = server.register(username, password, email);
+            authToken = response.getAuthToken();
             state = State.LOGGEDIN;
             return String.format("Registered new user %s.", username);
         }
-        throw new ResponseException("Expected: <username> <password> <email>");
+        throw new ResponseException("Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
 
     public String login(String ... params) throws ResponseException {
         if (params.length >= 2) {
             username = params[0];
             var password = params[1];
-            server.login(username, password);
+            var response = server.login(username, password);
+            authToken = response.getAuthToken();
+            System.out.println("authToken: " + authToken);
             state = State.LOGGEDIN;
             return String.format("Logged in as %s.", username);
         }
-        throw new ResponseException("Expected: <username> <password>");
+        throw new ResponseException("Expected: <USERNAME> <PASSWORD>");
     }
+
+    public String create(String ... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 1) {
+            var name = params[0];
+            System.out.println("authToken: " + authToken);
+            server.createGame(name, authToken);
+            return String.format("Created game %s.", name);
+        } else {
+            throw new ResponseException("Expected: <NAME>");
+        }
+    }
+
+    public String list() throws ResponseException {
+        assertSignedIn();
+        StringBuilder list = new StringBuilder();
+        int index = 1;
+        Collection<GameData> games = server.listGames(authToken).getGames();
+        int totalGames = games.size();
+        for (GameData game : games) {
+            list.append(index).append(". ").append(game.gameName());
+            if (index < totalGames)
+                list.append("\n");
+            index++;
+        }
+        return list.toString();
+    }
+
     public String signOut() throws ResponseException {
         assertSignedIn();
 //        ws.leavePetShop(visitorName);

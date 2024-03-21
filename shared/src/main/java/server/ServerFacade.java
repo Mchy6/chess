@@ -6,12 +6,16 @@ import response.*;
 import request.*;
 
 
+
 import java.io.*;
 import java.net.*;
+import java.util.Objects;
 
 public class ServerFacade {
 
     private final String serverUrl;
+//    private final DataAccess dataAccess;
+
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -21,7 +25,7 @@ public class ServerFacade {
         var path = "/user";
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
         try {
-            return this.makeRequest("POST", path, registerRequest, RegisterResponse.class);
+            return this.makeRequest("POST", path, registerRequest, RegisterResponse.class, null);
         } catch (ResponseException e) {
             throw new ResponseException(e.getMessage());
         }
@@ -31,7 +35,28 @@ public class ServerFacade {
         var path = "/session";
         LoginRequest loginRequest = new LoginRequest(username, password);
         try {
-            return this.makeRequest("POST", path, loginRequest, LoginResponse.class);
+            return this.makeRequest("POST", path, loginRequest, LoginResponse.class, null);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
+    }
+
+    public CreateGameResponse createGame(String gameName, String authToken) throws ResponseException {
+        var path = "/game";
+//        dataAccess.createAuthToken(authData);
+        CreateGameRequest createGameRequest = new CreateGameRequest(gameName);
+        try {
+            return this.makeRequest("POST", path, createGameRequest, CreateGameResponse.class, authToken);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
+    }
+
+    public ListGamesResponse listGames(String authToken) throws ResponseException {
+        var path = "/game";
+        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
+        try {
+            return this.makeRequest("GET", path, listGamesRequest, ListGamesResponse.class, authToken);
         } catch (ResponseException e) {
             throw new ResponseException(e.getMessage());
         }
@@ -61,14 +86,16 @@ public class ServerFacade {
         return response.pet();
     }
 */
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
-            http.setDoOutput(true);
-
-            writeBody(request, http);
+            http.addRequestProperty("Authorization", authToken);
+            if (!Objects.equals(method, "GET")) {
+                http.setDoOutput(true);
+                writeBody(request, http);
+            }
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);

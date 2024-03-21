@@ -9,6 +9,8 @@ import static ui.EscapeSequences.*;
 
 public class Repl {
     private final ChessClient client;
+    private State state = State.LOGGEDOUT;
+
 
     public Repl(String serverUrl) {
         client = new ChessClient(serverUrl);
@@ -36,7 +38,10 @@ public class Repl {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + SET_TEXT_COLOR_WHITE +  "LOGGED_OUT" + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
+//        if (state == State.LOGGEDIN) {
+//            System.out.print("\n" + SET_TEXT_COLOR_WHITE + "[LOGGED_IN]" + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
+//        } else {
+        System.out.print("\n" + SET_TEXT_COLOR_WHITE + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
     }
 
 }
