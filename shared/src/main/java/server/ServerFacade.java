@@ -2,7 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
-import model.Pet;
+
 
 import java.io.*;
 import java.net.*;
@@ -15,7 +15,7 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-
+/*
     public Pet addPet(Pet pet) throws ResponseException {
         var path = "/pet";
         return this.makeRequest("POST", path, pet, Pet.class);
@@ -38,7 +38,7 @@ public class ServerFacade {
         var response = this.makeRequest("GET", path, null, listPetResponse.class);
         return response.pet();
     }
-
+*/
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
@@ -69,7 +69,7 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            throw new ResponseException("failure: " + status);
         }
     }
 
