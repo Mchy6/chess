@@ -2,6 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import response.*;
+import request.*;
 
 
 import java.io.*;
@@ -13,6 +15,26 @@ public class ServerFacade {
 
     public ServerFacade(String url) {
         serverUrl = url;
+    }
+
+    public RegisterResponse register(String username, String password, String email) throws ResponseException {
+        var path = "/user";
+        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
+        try {
+            return this.makeRequest("POST", path, registerRequest, RegisterResponse.class);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
+    }
+
+    public LoginResponse login(String username, String password) throws ResponseException {
+        var path = "/session";
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        try {
+            return this.makeRequest("POST", path, loginRequest, LoginResponse.class);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
     }
 
 /*
