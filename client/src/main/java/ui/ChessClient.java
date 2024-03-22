@@ -37,7 +37,7 @@ public class ChessClient {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "join" -> join(params);
-//                case "observe" -> observe(params);
+                case "observe" -> observe(params);
                 case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
@@ -126,6 +126,19 @@ public class ChessClient {
         throw new ResponseException("Expected: <ID> <PLAYER_COLOR>");
     }
 
+    public String observe(String ... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 1) {
+            var number = Integer.parseInt(params[0]);
+            var id = gameMap.get(number);
+            StringBuilder result = new StringBuilder();
+            result.append("Observing game ").append(".");
+            result.append(createStartingBoard());
+            return result.toString();
+        }
+        throw new ResponseException("Expected: <ID>");
+    }
+
     public String help() {
         if (state == State.LOGGEDOUT) {
             return SET_TEXT_COLOR_BLUE + "  " + """
@@ -201,8 +214,5 @@ public class ChessClient {
 
         return board.toString();
     }
-
-
-
 
 }
