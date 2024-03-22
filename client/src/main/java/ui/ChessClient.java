@@ -18,12 +18,15 @@ public class ChessClient {
     private State state = State.LOGGEDOUT;
     private String authToken;
 
+    private Collection<GameData> gameCollection;
+
     private Map<Integer, Integer> gameMap;
 
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        server.clearDatabase();
     }
 
     public String eval(String input) {
@@ -39,7 +42,7 @@ public class ChessClient {
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "logout" -> logout();
-                case "quit" -> "quit";
+                case "quit" -> quit();
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -96,14 +99,27 @@ public class ChessClient {
 
     public String list() throws ResponseException {
         gameMap = new HashMap<>();
+        gameCollection = new ArrayList<>();
         assertSignedIn();
         StringBuilder list = new StringBuilder();
         int index = 1;
-        Collection<GameData> games = server.listGames(authToken).getGames();
-        int totalGames = games.size();
-        for (GameData game : games) {
+        gameCollection = server.listGames(authToken).getGames();
+        int totalGames = gameCollection.size();
+        for (GameData game : gameCollection) {
+//            System.out.println("DEBUG: from list, white and black " + game.whiteUsername() + " " + game.blackUsername());
             gameMap.put(index, game.gameID());
             list.append(index).append(". ").append(game.gameName());
+            if (game.whiteUsername() == null) {
+                list.append(" white player: no player |");
+            } else {
+                list.append(" white player: ").append(game.whiteUsername()).append(" |");
+            }
+            if (game.blackUsername() == null) {
+                list.append(" black: no player");
+            } else {
+                list.append(" black: ").append(game.blackUsername());
+            }
+
             if (index < totalGames)
                 list.append("\n");
             index++;
@@ -117,6 +133,17 @@ public class ChessClient {
             var number = Integer.parseInt(params[0]);
             var color = params[1];
             var id = gameMap.get(number);
+            var game = gameCollection.stream().filter(g -> g.gameID() == id).findFirst().orElse(null);
+//            System.out.println("DEBUG: from join, white and black " + game.whiteUsername() + " " + game.blackUsername());
+            if (game.whiteUsername() != null && game.blackUsername() != null) {
+                throw new ResponseException("Game is full");
+            } else if (game.whiteUsername() != null && color.equalsIgnoreCase("white")) {
+                throw new ResponseException("White player is already taken");
+            } else if (game.blackUsername() != null && color.equalsIgnoreCase("black")) {
+                throw new ResponseException("Black player is already taken");
+            } else if (game.whiteUsername() == null && color.equalsIgnoreCase("white")) {
+
+            }
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
             result.append("Joined game ").append(" as the ").append(color).append(" player.");
@@ -184,17 +211,17 @@ public class ChessClient {
         String c = RESET_BG_COLOR;
 
         // board 1:
-        board.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
-        board.append(" 8 ").append(r).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 8 ").append("\n");
-        board.append(" 7 ").append(r).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 7 ").append("\n");
+        board.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
+        board.append(" 1 ").append(r).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 1 ").append("\n");
+        board.append(" 2 ").append(r).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 2 ").append("\n");
 
-        for (int i = 6; i > 2; i-=2) {
+        for (int i = 2; i < 6; i+=2) {
             board.append(" ").append(i).append(" ").append(r).append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(c).append(w).append(" ").append(i).append(" ").append("\n");
-            board.append(" ").append(i-1).append(" ").append(r).append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(c).append(w).append(" ").append(i-1).append(" ").append("\n");
+            board.append(" ").append(i+1).append(" ").append(r).append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(c).append(w).append(" ").append(i+1).append(" ").append("\n");
         }
-        board.append(" 2 ").append(b).append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(c).append(w).append(" 2 ").append("\n");
-        board.append(" 1 ").append(b).append(d).append(" R ").append(l).append(" N ").append(d).append(" B ").append(l).append(" K ").append(d).append(" Q ").append(l).append(" B ").append(d).append(" N ").append(l).append(" R ").append(c).append(w).append(" 1 ").append("\n");
-        board.append("    a  b  c  d  e  f  g  h\n");
+        board.append(" 7 ").append(b).append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(c).append(w).append(" 7 ").append("\n");
+        board.append(" 8 ").append(b).append(d).append(" R ").append(l).append(" N ").append(d).append(" B ").append(l).append(" K ").append(d).append(" Q ").append(l).append(" B ").append(d).append(" N ").append(l).append(" R ").append(c).append(w).append(" 8 ").append("\n");
+        board.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
 
         board.append("\n");
 
@@ -215,4 +242,14 @@ public class ChessClient {
         return board.toString();
     }
 
+    public static String quit() {
+        System.exit(0);
+        return "quit";
+    }
+
 }
+
+// fails when 2 players join same game as same color
+// board should rotate 180
+// list games should show username of white and black player
+// make sure quit shuts down program

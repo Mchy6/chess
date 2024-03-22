@@ -121,9 +121,12 @@ public class Service {
         String color = joinGameRequest.getPlayerColor();
         GameData updatedGameData;
         if (color == null) {
+//            System.out.println("DEBUG: null?");
             updatedGameData = new GameData(joinGameRequest.getGameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
-        } else if (color.equals("WHITE")) {
+        } else if (color.equalsIgnoreCase("WHITE")) {
+
             updatedGameData = new GameData(joinGameRequest.getGameID(), authData.username(), blackUsername, gameData.gameName(), gameData.game());
+//            System.out.println("DEBUG: just put white player " + authData.username() + " in game");
         } else {
             updatedGameData = new GameData(joinGameRequest.getGameID(), whiteUsername, authData.username(), gameData.gameName(), gameData.game());
         }

@@ -3,6 +3,8 @@ package ui;
 //import client.websocket.NotificationHandler;
 //import webSocketMessages.Notification;
 
+import exception.ResponseException;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -12,7 +14,7 @@ public class Repl {
     private State state = State.LOGGEDOUT;
 
 
-    public Repl(String serverUrl) {
+    public Repl(String serverUrl) throws ResponseException {
         client = new ChessClient(serverUrl);
     }
 
