@@ -119,7 +119,7 @@ public class ChessClient {
             var id = gameMap.get(number);
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
-            result.append("Joined game ").append(id).append(" as ").append(color).append(".");
+            result.append("Joined game ").append(" as the ").append(color).append(" player.");
             result.append(createStartingBoard());
             return result.toString();
         }
@@ -171,7 +171,7 @@ public class ChessClient {
         String c = RESET_BG_COLOR;
 
         // board 1:
-        board.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
+        board.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
         board.append(" 8 ").append(r).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 8 ").append("\n");
         board.append(" 7 ").append(r).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 7 ").append("\n");
 

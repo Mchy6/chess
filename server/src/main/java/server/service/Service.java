@@ -87,7 +87,6 @@ public class Service {
 
     public CreateGameResponse createGame(CreateGameRequest createGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException {
         if (dataAccess.getAuthToken(createGameRequest.getAuthToken()) == null) {
-            System.out.println("Printed Error: unauthorized");
             throw new UnauthorizedException("Error: unauthorized");
         }
         if (createGameRequest.getGameName() == null) {
@@ -105,12 +104,12 @@ public class Service {
             throw new UnauthorizedException("Error: unauthorized");
         }
         if (gameData == null
-                || (!Objects.equals(joinGameRequest.getPlayerColor(), "WHITE")
-                && !Objects.equals(joinGameRequest.getPlayerColor(), "BLACK")
-                && !Objects.equals(joinGameRequest.getPlayerColor(), null))) {
+                || (!"white".equalsIgnoreCase(joinGameRequest.getPlayerColor())
+                && !"black".equalsIgnoreCase(joinGameRequest.getPlayerColor()))) {
             System.out.println(joinGameRequest.getPlayerColor());
             throw new BadRequestException("Error: bad request");
         }
+
         if (Objects.equals(joinGameRequest.getPlayerColor(), "WHITE") && gameData.whiteUsername() != null
                 || Objects.equals(joinGameRequest.getPlayerColor(), "BLACK") && gameData.blackUsername() != null) {
 
