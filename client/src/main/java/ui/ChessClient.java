@@ -1,8 +1,6 @@
 package ui;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import exception.ResponseException;
 //import client.websocket.NotificationHandler;
@@ -17,6 +15,8 @@ public class ChessClient {
     private final String serverUrl;
     private State state = State.LOGGEDOUT;
     private String authToken;
+
+    private Map<Integer, String> gameMap;
 
 
     public ChessClient(String serverUrl) {
@@ -34,9 +34,9 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "create" -> create(params);
                 case "list" -> list();
-//                case "join" -> join(params);
+                case "join" -> join(params);
 //                case "observe" -> observe(params);
-//                case "logout" -> logout();
+                case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -64,38 +64,88 @@ public class ChessClient {
             var password = params[1];
             var response = server.login(username, password);
             authToken = response.getAuthToken();
-            System.out.println("authToken: " + authToken);
             state = State.LOGGEDIN;
-            return String.format("Logged in as %s.", username);
+//            return String.format("Logged in as %s.", username);
+            return createStartingBoard();
         }
+
         throw new ResponseException("Expected: <USERNAME> <PASSWORD>");
+    }
+
+    public String logout(String ... params) throws ResponseException {
+        if (params.length == 0) {
+            server.logout(authToken);
+            authToken = null;
+            state = State.LOGGEDOUT;
+            return String.format("Logged out %s.", username);
+        }
+        throw new ResponseException("Expected: no arguments");
     }
 
     public String create(String ... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 1) {
             var name = params[0];
-            System.out.println("authToken: " + authToken);
             server.createGame(name, authToken);
-            return String.format("Created game %s.", name);
+//            return String.format("Created game %s.", name);
+            return  "    " +
+                    """
+                    a  b  c  d  e  f  g  h""" + "\n " +
+                    """
+                    8  R  N  B  K  Q  B  N  R  8""" + "\n " +
+                    """
+                    7  P  P  P  P  P  P  P  P  7""" + "\n " +
+                    """
+                    6  .  .  .  .  .  .  .  .  6""" + "\n " +
+                    """
+                    5  .  .  .  .  .  .  .  .  5""" + "\n " +
+                    """
+                    4  .  .  .  .  .  .  .  .  4""" + "\n " +
+                    """
+                    3  .  .  .  .  .  .  .  .  3""" + "\n " +
+                    """
+                    2  P  P  P  P  P  P  P  P  2""" + "\n " +
+                    """
+                    1  R  N  B  K  Q  B  N  R  1""" + "\n    " +
+                    """
+                    a  b  c  d  e  f  g  h""" + "\n ";
         } else {
             throw new ResponseException("Expected: <NAME>");
         }
     }
 
     public String list() throws ResponseException {
+        gameMap = new HashMap<>();
         assertSignedIn();
         StringBuilder list = new StringBuilder();
         int index = 1;
         Collection<GameData> games = server.listGames(authToken).getGames();
         int totalGames = games.size();
         for (GameData game : games) {
+            gameMap.put(index, game.gameName());
             list.append(index).append(". ").append(game.gameName());
             if (index < totalGames)
                 list.append("\n");
             index++;
         }
         return list.toString();
+    }
+
+    public String join(String ... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 2) {
+            var id = Integer.parseInt(params[0]);
+            var color = params[1];
+            server.joinGame(color, id, authToken);
+            StringBuilder result = new StringBuilder();
+            result.append("Joined game ").append(id).append(" as ").append(color).append(".");
+            result.append("""
+                    chess game here (2 boards, one in each orientation)
+                    
+                    """);
+            return result.toString();
+        }
+        throw new ResponseException("Expected: <ID> <PLAYER_COLOR>");
     }
 
     public String signOut() throws ResponseException {
@@ -124,7 +174,7 @@ public class ChessClient {
                 - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                 list""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                 - games""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                join <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                join <ID> <PLAYER_COLOR>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                 - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                 observe <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                 - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
@@ -141,4 +191,31 @@ public class ChessClient {
             throw new ResponseException("You must log in");
         }
     }
+
+    public static String createStartingBoard() {
+        StringBuilder board = new StringBuilder();
+
+        // Define colors for the checkerboard pattern
+        String l = SET_BG_COLOR_LIGHT_GREY;
+        String d = SET_BG_COLOR_DARK_GREY;
+        String r = SET_TEXT_COLOR_RED;
+        String b = SET_TEXT_COLOR_BLUE;
+        String w = SET_TEXT_COLOR_WHITE;
+        String c = RESET_BG_COLOR;
+
+        board.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
+        board.append(" 8 ").append(r).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 8 ").append("\n");
+        //board.append(" 7 ").append(r).append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(c).append(w).append(" 7 ").append("\n");
+        board.append(" 7 ").append(r).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 7 ").append("\n");
+
+        for (int i = 6; i > 2; i-=2) {
+            board.append(" ").append(i).append(" ").append(r).append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(c).append(w).append(" ").append(i).append(" ").append("\n");
+            board.append(" ").append(i-1).append(" ").append(r).append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(c).append(w).append(" ").append(i-1).append(" ").append("\n");
+        }
+        return board.toString();
+    }
+
+
+
+
 }

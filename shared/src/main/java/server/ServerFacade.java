@@ -41,6 +41,16 @@ public class ServerFacade {
         }
     }
 
+    public void logout(String authToken) throws ResponseException {
+        var path = "/session";
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+        try {
+            this.makeRequest("DELETE", path, logoutRequest, null, authToken);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
+    }
+
     public CreateGameResponse createGame(String gameName, String authToken) throws ResponseException {
         var path = "/game";
 //        dataAccess.createAuthToken(authData);
@@ -57,6 +67,16 @@ public class ServerFacade {
         ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
         try {
             return this.makeRequest("GET", path, listGamesRequest, ListGamesResponse.class, authToken);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.getMessage());
+        }
+    }
+
+    public void joinGame(String playerColor, int gameID, String authToken) throws ResponseException {
+        var path = "/game"; //  + "/" + gameID;
+        JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, gameID);
+        try {
+            this.makeRequest("PUT", path, joinGameRequest, null, authToken);
         } catch (ResponseException e) {
             throw new ResponseException(e.getMessage());
         }
