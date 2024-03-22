@@ -108,7 +108,7 @@ public class Service {
                 || (!Objects.equals(joinGameRequest.getPlayerColor(), "WHITE")
                 && !Objects.equals(joinGameRequest.getPlayerColor(), "BLACK")
                 && !Objects.equals(joinGameRequest.getPlayerColor(), null))) {
-
+            System.out.println(joinGameRequest.getPlayerColor());
             throw new BadRequestException("Error: bad request");
         }
         if (Objects.equals(joinGameRequest.getPlayerColor(), "WHITE") && gameData.whiteUsername() != null

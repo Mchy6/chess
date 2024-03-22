@@ -1,9 +1,11 @@
 package ui;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import exception.ResponseException;
 //import client.websocket.NotificationHandler;
+import response.CreateGameResponse;
 import server.ServerFacade;
 //import client.websocket.WebSocketFacade;
 import static ui.EscapeSequences.*;
@@ -16,7 +18,7 @@ public class ChessClient {
     private State state = State.LOGGEDOUT;
     private String authToken;
 
-    private Map<Integer, String> gameMap;
+    private Map<Integer, Integer> gameMap;
 
 
     public ChessClient(String serverUrl) {
@@ -85,7 +87,7 @@ public class ChessClient {
         assertSignedIn();
         if (params.length >= 1) {
             var name = params[0];
-            server.createGame(name, authToken);
+            CreateGameResponse createGameResponse = server.createGame(name, authToken);
             return String.format("Created game %s.", name);
         } else {
             throw new ResponseException("Expected: <NAME>");
@@ -100,7 +102,7 @@ public class ChessClient {
         Collection<GameData> games = server.listGames(authToken).getGames();
         int totalGames = games.size();
         for (GameData game : games) {
-            gameMap.put(index, game.gameName());
+            gameMap.put(index, game.gameID());
             list.append(index).append(". ").append(game.gameName());
             if (index < totalGames)
                 list.append("\n");
@@ -112,8 +114,9 @@ public class ChessClient {
     public String join(String ... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 2) {
-            var id = Integer.parseInt(params[0]);
+            var number = Integer.parseInt(params[0]);
             var color = params[1];
+            var id = gameMap.get(number);
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
             result.append("Joined game ").append(id).append(" as ").append(color).append(".");
