@@ -82,6 +82,19 @@ public class ServerFacade {
         }
     }
 
+    public void clearDatabase() throws ResponseException {
+        try {
+            URL url = new URL(serverUrl + "/db");
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod("DELETE"); // Use the DELETE method as defined in your server
+            http.connect();
+            throwIfNotSuccessful(http); // Reuse this method to check if the request was successful
+        } catch (Exception ex) {
+            throw new ResponseException("Failed to clear database: " + ex.getMessage());
+        }
+    }
+
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
