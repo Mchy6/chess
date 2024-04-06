@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="lib">
+  <library name="org.glassfish.tyrus.bundles:tyrus-standalone-client:1.15">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/server/lib" />
     </CLASSES>
