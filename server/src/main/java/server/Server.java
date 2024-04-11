@@ -12,6 +12,7 @@ import response.RegisterResponse;
 import server.service.Service;
 import spark.*;
 import exception.ResponseException;
+import server.websocket.WebSocketHandler;
 
 public class Server {
     private final Service service;

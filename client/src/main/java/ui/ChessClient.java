@@ -3,6 +3,7 @@ package ui;
 import java.lang.reflect.Array;
 import java.util.*;
 
+import chess.ChessGame;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import response.CreateGameResponse;
@@ -133,12 +134,12 @@ public class ChessClient {
 
     public String join(String ... params) throws ResponseException {
         assertSignedIn();
+
         if (params.length >= 2) {
             var number = Integer.parseInt(params[0]);
             var color = params[1];
             var id = gameMap.get(number);
             var game = gameCollection.stream().filter(g -> g.gameID() == id).findFirst().orElse(null);
-//            System.out.println("DEBUG: from join, white and black " + game.whiteUsername() + " " + game.blackUsername());
             if (game.whiteUsername() != null && game.blackUsername() != null) {
                 throw new ResponseException("Game is full");
             } else if (game.whiteUsername() != null && color.equalsIgnoreCase("white")) {
@@ -148,10 +149,23 @@ public class ChessClient {
             } else if (game.whiteUsername() == null && color.equalsIgnoreCase("white")) {
 
             }
+
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
             result.append("Joined game ").append(" as the ").append(color).append(" player.");
             result.append(createStartingBoard());
+
+            // for websocket
+            ChessGame.TeamColor teamColor = null;
+            if (color.equalsIgnoreCase("white")) {
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (color.equalsIgnoreCase("black")) {
+                teamColor = ChessGame.TeamColor.BLACK;
+            }
+
+            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+            ws.joinPlayer(id, teamColor, authToken);
+
             return result.toString();
         }
         throw new ResponseException("Expected: <ID> <PLAYER_COLOR>");

@@ -1,8 +1,11 @@
 package ui.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.ugcJoinPlayer;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -43,14 +46,14 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-//    public void enterPetShop(String visitorName) throws ResponseException {
-//        try {
-//            var action = new Action(Action.Type.ENTER, visitorName);
-//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-//        } catch (IOException ex) {
-//            throw new ResponseException(500, ex.getMessage());
-//        }
-//    }
+    public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken) throws ResponseException {
+        try {
+            var ugc = new ugcJoinPlayer(gameID, playerColor, authToken);
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
 //
 //    public void leavePetShop(String visitorName) throws ResponseException {
 //        try {
