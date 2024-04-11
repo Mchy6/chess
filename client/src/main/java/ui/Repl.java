@@ -1,15 +1,13 @@
 package ui;
 
-//import client.websocket.NotificationHandler;
-//import webSocketMessages.Notification;
-
 import exception.ResponseException;
-
+import ui.websocket.NotificationHandler;
+import webSocketMessages.Notification;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Repl {
+public class Repl implements NotificationHandler {
     private final ChessClient client;
     private State state = State.LOGGEDOUT;
 
@@ -39,10 +37,12 @@ public class Repl {
         System.out.println();
     }
 
+    public void notify(Notification notification) {
+        System.out.println(SET_TEXT_COLOR_RED + notification.message());
+        printPrompt();
+    }
+
     private void printPrompt() {
-//        if (state == State.LOGGEDIN) {
-//            System.out.print("\n" + SET_TEXT_COLOR_WHITE + "[LOGGED_IN]" + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
-//        } else {
         System.out.print("\n" + SET_TEXT_COLOR_WHITE + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
     }
 
