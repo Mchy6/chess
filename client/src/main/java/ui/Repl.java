@@ -1,13 +1,14 @@
 package ui;
 
 import exception.ResponseException;
-import ui.websocket.NotificationHandler;
-import webSocketMessages.Notification;
+import ui.websocket.ServerMessageHandler;
+import webSocketMessages.serverMessages.ServerMessage;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Repl implements NotificationHandler {
+public class Repl implements ServerMessageHandler {
     private final ChessClient client;
     private State state = State.LOGGEDOUT;
 
@@ -37,8 +38,9 @@ public class Repl implements NotificationHandler {
         System.out.println();
     }
 
-    public void notify(Notification notification) {
-        System.out.println(SET_TEXT_COLOR_RED + notification.message());
+    public void notify(ServerMessage serverMessage) {
+//        System.out.println(SET_TEXT_COLOR_RED + serverMessage.message());
+        System.out.println("Should print out notification/error/load game msg here");
         printPrompt();
     }
 

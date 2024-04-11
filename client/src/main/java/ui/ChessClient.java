@@ -4,12 +4,14 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 import exception.ResponseException;
-//import client.websocket.NotificationHandler;
+import ui.websocket.ServerMessageHandler;
 import response.CreateGameResponse;
 import server.ServerFacade;
-//import client.websocket.WebSocketFacade;
+import ui.websocket.WebSocketFacade;
 import static ui.EscapeSequences.*;
 import model.GameData;
+import ui.websocket.ServerMessageHandler;
+import ui.websocket.WebSocketFacade;
 
 public class ChessClient {
     private String username = null;
@@ -17,15 +19,17 @@ public class ChessClient {
     private final String serverUrl;
     private State state = State.LOGGEDOUT;
     private String authToken;
-
+    private final ServerMessageHandler serverMessageHandler;
+    private WebSocketFacade ws;
     private Collection<GameData> gameCollection;
 
     private Map<Integer, Integer> gameMap;
 
 
-    public ChessClient(String serverUrl) throws ResponseException {
+    public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) throws ResponseException {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        this.serverMessageHandler = serverMessageHandler;
         server.clearDatabase();
     }
 
