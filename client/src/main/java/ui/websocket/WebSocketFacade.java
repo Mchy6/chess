@@ -32,6 +32,7 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
+//                    System.out.println("Client received message: " + message);
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
                     serverMessageHandler.notify(serverMessage);
                 }
@@ -46,10 +47,11 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken) throws ResponseException {
-        try {
-            var ugc = new ugcJoinPlayer(gameID, playerColor, authToken);
-            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+        public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken, String playerName) throws ResponseException {
+            try {
+                var ugc = new ugcJoinPlayer(gameID, playerColor, authToken, playerName);
+                System.out.println("Sending message: " + new Gson().toJson(ugc));
+                this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }

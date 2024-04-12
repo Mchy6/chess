@@ -39,8 +39,8 @@ public class Repl implements ServerMessageHandler {
     }
 
     public void notify(ServerMessage serverMessage) {
-//        System.out.println(SET_TEXT_COLOR_RED + serverMessage.message());
-        System.out.println("Should print out notification/error/load game msg here");
+        System.out.println(SET_TEXT_COLOR_RED + serverMessage.message());
+//        System.out.println("Should print out notification/error/load game msg here");
         printPrompt();
     }
 

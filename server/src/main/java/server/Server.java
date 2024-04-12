@@ -153,7 +153,9 @@ public class Server {
             joinGameRequest.setAuthToken(req.headers("Authorization"));
             try {
                 service.joinGame(joinGameRequest);
-                webSocketHandler.joinPlayer(pet.name(), pet.sound());
+//                shouldn't need to have this following line, websocketfacade should send ws message and websockethandler
+//                should receive it automatically
+//                webSocketHandler.joinPlayer(joinGameRequest.getPlayer); // need some way to get name
                 return "{}";
             } catch (BadRequestException e) {
                 ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());

@@ -26,9 +26,6 @@ public class ConnectionManager {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-//                if (!c.visitorName.equals(excludeVisitorName)) {
-//                    c.send(serverMessage.toString());
-//                }
                 c.send(serverMessage.toString());
             } else {
                 removeList.add(c);
@@ -38,6 +35,26 @@ public class ConnectionManager {
         // Clean up any connections that were left open.
         for (var c : removeList) {
             connections.remove(c.authToken);
+        }
+    }
+
+    public void excludeRootBroadcast(ServerMessage serverMessage, String rootAuthToken) throws IOException {
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (!c.authToken.equals(rootAuthToken)) {
+                    c.send(serverMessage.toString());
+                }
+            }
+        }
+    }
+
+    public void rootBroadcast(ServerMessage serverMessage, String rootAuthToken) throws IOException {
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.authToken.equals(rootAuthToken)) {
+                    c.send(serverMessage.toString());
+                }
+            }
         }
     }
 }

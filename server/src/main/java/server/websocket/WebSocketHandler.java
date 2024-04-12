@@ -1,13 +1,15 @@
 package server.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.DataAccess;
+//import dataaccess.DataAccess;
 import exception.ResponseException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import webSocketMessages.*;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.smLoadGame;
+import webSocketMessages.serverMessages.smNotification;
 import webSocketMessages.userCommands.UserGameCommand;
 import webSocketMessages.userCommands.ugcJoinPlayer;
 
@@ -22,22 +24,22 @@ public class WebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
+//        System.out.println("Server recieved message: " + message);
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.getType()) {
             case JOIN_PLAYER -> {
-                if (userGameCommand instanceof ugcJoinPlayer joinPlayerCommand)
-                    joinPlayer(joinPlayerCommand.getPlayerName(), session);
+                joinPlayer(userGameCommand.getPlayerName(), userGameCommand.getTeamColor(), userGameCommand.getAuthToken(), session);
             }
-
             // add more cases here
         }
     }
 
-    private void joinPlayer(String playerName, Session session) throws IOException {
-        connections.add(playerName, session);
-        var message = String.format("%s is in the shop", visitorName);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, message);
-        connections.broadcast(visitorName, notification);
+    private void joinPlayer(String playerName, ChessGame.TeamColor teamColor, String authToken, Session session) throws IOException {
+        connections.add(authToken, session);
+        var notificationMessage = new smNotification(String.format("%s is joined as the %s player", playerName, teamColor));
+        var loadGameMessage = new smLoadGame(new ChessGame()); // need to pass in the game, right now just sends a new game
+        connections.rootBroadcast(loadGameMessage, authToken);
+        connections.excludeRootBroadcast(notificationMessage, authToken);
     }
 
 //    private void exit(String visitorName) throws IOException {

@@ -164,7 +164,7 @@ public class ChessClient {
             }
 
             ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-            ws.joinPlayer(id, teamColor, authToken);
+            ws.joinPlayer(id, teamColor, authToken, username);
 
             return result.toString();
         }
