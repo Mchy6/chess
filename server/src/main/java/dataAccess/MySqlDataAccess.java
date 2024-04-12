@@ -17,7 +17,6 @@ public class MySqlDataAccess implements DataAccess {
 
     public MySqlDataAccess() throws DataAccessException, DataAccessException {
         createDatabase();
-
     }
 
     @Override

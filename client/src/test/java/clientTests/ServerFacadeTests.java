@@ -22,7 +22,7 @@ public class ServerFacadeTests {
     static ServerFacade facade;
 
     @BeforeAll
-    public static void init() throws ResponseException {
+    public static void init() throws ResponseException, DataAccessException {
         server = new Server();
         var port = server.run(8082);
         String serverURL = "http://localhost:8082";

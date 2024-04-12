@@ -1,9 +1,10 @@
+import dataAccess.DataAccessException;
 import exception.ResponseException;
 import server.Server;
 import ui.Repl;
 
 public class Main {
-    public static void main(String[] args) throws ResponseException {
+    public static void main(String[] args) throws ResponseException, DataAccessException {
         Server server = null;
         server = new Server();
         server.run(8080);

@@ -4,7 +4,7 @@ import server.Server;
 
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws DataAccessException {
         Server server = null;
         server = new Server();
         server.run(8080);

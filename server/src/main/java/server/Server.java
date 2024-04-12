@@ -18,7 +18,7 @@ public class Server {
     private final Service service;
     private final WebSocketHandler webSocketHandler;
 
-    public Server() {
+    public Server() throws DataAccessException {
         try {
         service = new Service(new MySqlDataAccess());
             DatabaseManager.createDatabase();

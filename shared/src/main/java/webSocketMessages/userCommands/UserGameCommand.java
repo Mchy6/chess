@@ -4,6 +4,8 @@ import chess.ChessGame;
 
 public class UserGameCommand {
 
+
+
     public enum CommandType {
         JOIN_PLAYER,
         JOIN_OBSERVER,
@@ -16,6 +18,7 @@ public class UserGameCommand {
 
     private String authToken;
     public String username;
+    public int gameID;
     public ChessGame.TeamColor teamColor;
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
@@ -32,5 +35,8 @@ public class UserGameCommand {
     }
     public ChessGame.TeamColor getTeamColor() {
         return teamColor;
+    }
+    public int getID() {
+        return gameID;
     }
 }

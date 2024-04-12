@@ -3,7 +3,6 @@ package webSocketMessages.userCommands;
 import chess.ChessGame;
 
 public class ugcJoinPlayer extends UserGameCommand {
-    private int gameID;
 
     public ugcJoinPlayer(int gameID, ChessGame.TeamColor teamColor, String authToken, String username) {
         this.setAuthToken(authToken);

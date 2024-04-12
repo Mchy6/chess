@@ -44,6 +44,8 @@ public class Repl implements ServerMessageHandler {
         System.out.println("notify called" + serverMessage.toString());
         System.out.println(serverMessage.getMessage());
         printPrompt();
+        // if (serverMessage.getType() == ServerMessageType.LOAD_GAME) {
+        // draw game
     }
 
     private void printPrompt() {
