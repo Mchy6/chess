@@ -1,6 +1,7 @@
 package webSocketMessages.userCommands;
 
 public class UserGameCommand {
+
     public enum CommandType {
         JOIN_PLAYER,
         JOIN_OBSERVER,
@@ -15,5 +16,12 @@ public class UserGameCommand {
 
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
+    }
+    public CommandType getType() {
+        return commandType;
+    }
+
+    public String getAuthToken() {
+        return authToken;
     }
 }

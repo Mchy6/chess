@@ -16,7 +16,7 @@ import server.websocket.WebSocketHandler;
 
 public class Server {
     private final Service service;
-
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         try {
@@ -25,11 +25,13 @@ public class Server {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-//        service = new Service(new MemoryDataAccess());
+        webSocketHandler = new WebSocketHandler();
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/connect", webSocketHandler);
 
         var gson = new Gson();
 
@@ -151,6 +153,7 @@ public class Server {
             joinGameRequest.setAuthToken(req.headers("Authorization"));
             try {
                 service.joinGame(joinGameRequest);
+                webSocketHandler.joinPlayer(pet.name(), pet.sound());
                 return "{}";
             } catch (BadRequestException e) {
                 ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
