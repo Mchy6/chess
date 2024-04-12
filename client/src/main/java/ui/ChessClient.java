@@ -31,7 +31,7 @@ public class ChessClient {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
         this.serverMessageHandler = serverMessageHandler;
-        server.clearDatabase();
+//        server.clearDatabase();
     }
 
     public String eval(String input) {
@@ -140,31 +140,39 @@ public class ChessClient {
             var color = params[1];
             var id = gameMap.get(number);
             var game = gameCollection.stream().filter(g -> g.gameID() == id).findFirst().orElse(null);
-            if (game.whiteUsername() != null && game.blackUsername() != null) {
-                throw new ResponseException("Game is full");
-            } else if (game.whiteUsername() != null && color.equalsIgnoreCase("white")) {
-                throw new ResponseException("White player is already taken");
-            } else if (game.blackUsername() != null && color.equalsIgnoreCase("black")) {
-                throw new ResponseException("Black player is already taken");
-            } else if (game.whiteUsername() == null && color.equalsIgnoreCase("white")) {
-
-            }
-
-            server.joinGame(color, id, authToken);
-            StringBuilder result = new StringBuilder();
-            result.append("Joined game ").append(" as the ").append(color).append(" player.");
-            result.append(createStartingBoard());
 
             // for websocket
+            String error = "no error";
+
             ChessGame.TeamColor teamColor = null;
             if (color.equalsIgnoreCase("white")) {
                 teamColor = ChessGame.TeamColor.WHITE;
             } else if (color.equalsIgnoreCase("black")) {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-
             ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+
+
+            if (game.whiteUsername() != null && game.blackUsername() != null) {
+                error = "Game is full";
+                throw new ResponseException(error);
+            } else if (game.whiteUsername() != null && color.equalsIgnoreCase("white")) {
+                error = "White player is already taken";
+                throw new ResponseException(error);
+            } else if (game.blackUsername() != null && color.equalsIgnoreCase("black")) {
+                error = "Black player is already taken";
+                throw new ResponseException(error);
+            } else if (game.whiteUsername() == null && color.equalsIgnoreCase("white")) {
+
+            }
+
             ws.joinPlayer(id, teamColor, authToken, username);
+            server.joinGame(color, id, authToken);
+            StringBuilder result = new StringBuilder();
+            result.append("Joined game ").append(" as the ").append(color).append(" player.");
+            result.append(createStartingBoard());
+
+
 
             return result.toString();
         }

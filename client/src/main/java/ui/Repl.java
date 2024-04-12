@@ -1,11 +1,13 @@
 package ui;
 
+import chess.*;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
 
+import static chess.ChessPiece.PieceType.BISHOP;
 import static ui.EscapeSequences.*;
 
 public class Repl implements ServerMessageHandler {
@@ -39,8 +41,8 @@ public class Repl implements ServerMessageHandler {
     }
 
     public void notify(ServerMessage serverMessage) {
-        System.out.println(SET_TEXT_COLOR_RED + serverMessage.message());
-//        System.out.println("Should print out notification/error/load game msg here");
+        System.out.println("notify called" + serverMessage.toString());
+        System.out.println(serverMessage.getMessage());
         printPrompt();
     }
 

@@ -15,7 +15,7 @@ public class UserGameCommand {
     protected CommandType commandType;
 
     private String authToken;
-    public String playerName;
+    public String username;
     public ChessGame.TeamColor teamColor;
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
@@ -27,8 +27,8 @@ public class UserGameCommand {
     public String getAuthToken() {
         return authToken;
     }
-    public String getPlayerName() {
-        return playerName;
+    public String getUsername() {
+        return username;
     }
     public ChessGame.TeamColor getTeamColor() {
         return teamColor;

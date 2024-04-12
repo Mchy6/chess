@@ -1,14 +1,15 @@
 package webSocketMessages.serverMessages;
 
+import chess.ChessGame;
+
 public class smNotification extends ServerMessage {
-    private final String message;
 
     public smNotification(String message) {
         this.serverMessageType = ServerMessageType.NOTIFICATION;
-        this.message = message;
+        this.setMessage(message);
     }
 
-    public String getMessage() {
-        return message;
+    public ChessGame getGame() {
+        return null;
     }
 }
