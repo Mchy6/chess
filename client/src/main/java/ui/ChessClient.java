@@ -173,7 +173,7 @@ public class ChessClient {
             result.append(createStartingBoard());
 
 
-
+            state = State.PLAYINGGAME;
             return result.toString();
         }
         throw new ResponseException("Expected: <ID> <PLAYER_COLOR>");
@@ -187,6 +187,7 @@ public class ChessClient {
             StringBuilder result = new StringBuilder();
             result.append("Observing game ").append(".");
             result.append(createStartingBoard());
+            state = State.OBSERVINGGAME;
             return result.toString();
         }
         throw new ResponseException("Expected: <ID>");
@@ -203,22 +204,46 @@ public class ChessClient {
                     - playing chess""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                     help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                     - with possible commands""" + RESET_TEXT_COLOR;
+        } else if (state == State.LOGGEDIN) {
+            return SET_TEXT_COLOR_BLUE + "  " + """
+                    create <NAME>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    list""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - games""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    join <ID> <PLAYER_COLOR>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    observe <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    logout""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - when you are done""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    quit""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - playing chess""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - with possible commands""" + RESET_TEXT_COLOR;
+        } else if (state == State.PLAYINGGAME) {
+            return SET_TEXT_COLOR_BLUE + "  " + """
+                    help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - with possible commands""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    redraw""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - the chess board""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    leave""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    make move <STARTING_COORDINATES> <ENDING_COORDINATES>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - to move a piece""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    resign""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                    highlight legal moves""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    - for a piece""" + RESET_TEXT_COLOR;
         }
         return SET_TEXT_COLOR_BLUE + "  " + """
-                create <NAME>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                list""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - games""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                join <ID> <PLAYER_COLOR>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                observe <ID>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - a game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                logout""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - when you are done""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                quit""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - playing chess""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                 help""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
-                - with possible commands""" + RESET_TEXT_COLOR;
+                - with possible commands""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                redraw""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - the chess board""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                leave""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
+                highlight legal moves""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                - for a piece""" + RESET_TEXT_COLOR;
     }
 
     private void assertSignedIn() throws ResponseException {

@@ -42,6 +42,12 @@ public class WebSocketHandler {
             case JOIN_OBSERVER -> {
                 joinObserver(userGameCommand.getUsername(), userGameCommand.getAuthToken(), session, userGameCommand.getID());
             }
+            case MAKE_MOVE -> {
+                makeMove(userGameCommand.getID(), userGameCommand.getMove(), userGameCommand.getUsername());
+            }
+            case LEAVE -> { // must make ugcLeave
+                leave(userGameCommand.getAuthToken(), userGameCommand.getUsername());
+            }
         }
     }
 
@@ -49,20 +55,20 @@ public class WebSocketHandler {
         // if there is an error: { connections.broadcast(new smError(error)); }
 
         try {
-            GameData game = dataAccess.getGame(gameID);
-            if (game == null) {
+            GameData gameData = dataAccess.getGame(gameID);
+            if (gameData == null) {
                 connections.broadcast(new smError("Error: Game does not exist"));
-            } else if (game.whiteUsername() != null && game.blackUsername() != null) {
+            } else if (gameData.whiteUsername() != null && gameData.blackUsername() != null) {
                 connections.broadcast(new smError("Error: Game is full"));
-            } else if (game.whiteUsername() != null && teamColor.equals(ChessGame.TeamColor.WHITE)) {
+            } else if (gameData.whiteUsername() != null && teamColor.equals(ChessGame.TeamColor.WHITE)) {
                 connections.broadcast(new smError("Error: White player is already taken"));
-            } else if (game.blackUsername() != null && teamColor.equals(ChessGame.TeamColor.BLACK)) {
+            } else if (gameData.blackUsername() != null && teamColor.equals(ChessGame.TeamColor.BLACK)) {
                 connections.broadcast(new smError("Error: Black player is already taken"));
             } else {
 
                 connections.add(authToken, session);
                 var notificationMessage = new smNotification(String.format("%s joined as the %s player", playerName, teamColor));
-                var loadGameMessage = new smLoadGame(new ChessGame()); // need to pass in the game, right now just sends a new game
+                var loadGameMessage = new smLoadGame(gameData.game());
                 connections.rootBroadcast(loadGameMessage, authToken);
                 connections.excludeRootBroadcast(notificationMessage, authToken);
             }
@@ -75,14 +81,14 @@ public class WebSocketHandler {
 
 
         try {
-            GameData game = dataAccess.getGame(gameID);
-            if (game == null) {
+            GameData gameData = dataAccess.getGame(gameID);
+            if (gameData == null) {
                 connections.broadcast(new smError("Error: Game does not exist"));
             } else {
                 connections.add(authToken, session);
                 var notificationMessage = new smNotification(String.format("%s joined as an observer", observerName));
                 connections.excludeRootBroadcast(notificationMessage, authToken);
-                var loadGameMessage = new smLoadGame(new ChessGame()); // need to pass in the game, right now just sends a new game
+                var loadGameMessage = new smLoadGame(gameData.game());
                 connections.rootBroadcast(loadGameMessage, authToken);
             }
         } catch (DataAccessException e) {
@@ -90,8 +96,36 @@ public class WebSocketHandler {
         }
     }
 
-//    private void leave(String authToken)
+    // see: https://github.com/softwareconstruction240/softwareconstruction/blob/main/chess/6-gameplay/gameplay.md#notifications
+    private void makeMove(int gameID, ChessMove move, String playerName) throws IOException { // need to add handling for errors
+        try {
+            dataAccess.getGame(gameID).game().makeMove(move);
+        } catch (DataAccessException e) {
+            connections.broadcast(new smError("Error: " + e));
+        } catch (InvalidMoveException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private void resign(int gameID, String playerName, String authToken) throws IOException {
+//        try {
+////            dataAccess.getGame(gameID).game().endGame();
+//
+//        } catch (DataAccessException e) {
+//            connections.broadcast(new smError("Error: " + e));
+//        }
+
+        var notificationMessage = new smNotification(String.format("%s resigned, game is over", playerName));
+        connections.excludeRootBroadcast(notificationMessage, authToken);
+        connections.remove(authToken);
+    }
+
+    private void leave(String authToken, String username) throws IOException {
+        var notificationMessage = new smNotification(String.format("%s left the game", username));
+        connections.excludeRootBroadcast(notificationMessage, authToken);
+        connections.remove(authToken);
+
+    }
 
 
 //    private void exit(String visitorName) throws IOException {

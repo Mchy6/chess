@@ -18,14 +18,18 @@ public class Server {
     private final Service service;
     private final WebSocketHandler webSocketHandler;
 
-    public Server() throws DataAccessException {
+    public Server() {
         try {
         service = new Service(new MySqlDataAccess());
             DatabaseManager.createDatabase();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        webSocketHandler = new WebSocketHandler();
+        try {
+            webSocketHandler = new WebSocketHandler();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
