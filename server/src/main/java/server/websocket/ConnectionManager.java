@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    // link 1 gameID with multiple authtoken/connection s
 
     public void add(String authToken, Session session) {
         var connection = new Connection(authToken, session);

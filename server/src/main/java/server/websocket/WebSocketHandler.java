@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.MySqlDataAccess;
 import exception.ResponseException;
+import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -37,10 +38,10 @@ public class WebSocketHandler {
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.getType()) {
             case JOIN_PLAYER -> {
-                joinPlayer(userGameCommand.getUsername(), userGameCommand.getTeamColor(), userGameCommand.getAuthToken(), session, userGameCommand.getID());
+                joinPlayer(userGameCommand.getPlayerColor(), userGameCommand.getAuthToken(), session, userGameCommand.getID());
             }
             case JOIN_OBSERVER -> {
-                joinObserver(userGameCommand.getUsername(), userGameCommand.getAuthToken(), session, userGameCommand.getID());
+                joinObserver(userGameCommand.getAuthToken(), session, userGameCommand.getID());
             }
             case MAKE_MOVE -> {
                 makeMove(userGameCommand.getID(), userGameCommand.getMove(), userGameCommand.getUsername());
@@ -51,46 +52,61 @@ public class WebSocketHandler {
         }
     }
 
-    private void joinPlayer(String playerName, ChessGame.TeamColor teamColor, String authToken, Session session, int gameID) throws IOException, InvalidMoveException, DataAccessException {
-        // if there is an error: { connections.broadcast(new smError(error)); }
+//    private void joinPlayer(int gameID, ChessGame.TeamColor playerColor) {
+//        System.out.println("gameID: " + gameID);
+//        System.out.println("playerColor: " + playerColor);
+//    }
 
+    private void joinPlayer(ChessGame.TeamColor playerColor, String authToken, Session session, int gameID) throws IOException, InvalidMoveException, DataAccessException {
+        connections.add(authToken, session);
         try {
             GameData gameData = dataAccess.getGame(gameID);
-            if (gameData == null) {
-                connections.broadcast(new smError("Error: Game does not exist"));
-            } else if (gameData.whiteUsername() != null && gameData.blackUsername() != null) {
-                connections.broadcast(new smError("Error: Game is full"));
-            } else if (gameData.whiteUsername() != null && teamColor.equals(ChessGame.TeamColor.WHITE)) {
-                connections.broadcast(new smError("Error: White player is already taken"));
-            } else if (gameData.blackUsername() != null && teamColor.equals(ChessGame.TeamColor.BLACK)) {
-                connections.broadcast(new smError("Error: Black player is already taken"));
+            AuthData authData = dataAccess.getAuthToken(authToken);
+            if (authData == null) {
+                connections.rootBroadcast(new smError("Error: invalid authToken"), authToken);
             } else {
+                String playerName = authData.username();
+                if (gameData == null) {
+                    connections.rootBroadcast(new smError("Error: Game does not exist"), authToken);
+                } else if (gameData.whiteUsername() == null || gameData.blackUsername() == null) {
+                    connections.rootBroadcast(new smError("Error: HTTP not called, possibly"), authToken);
+                } else if (playerColor != null && playerColor.equals(ChessGame.TeamColor.WHITE) && !(gameData.whiteUsername().equals(playerName))) {
+                    connections.rootBroadcast(new smError("Error: trying to join as white player with wrong username"), authToken);
+                } else if (playerColor != null && playerColor.equals(ChessGame.TeamColor.BLACK) && !(gameData.blackUsername().equals(playerName))) {
+                    connections.rootBroadcast(new smError("Error: trying to join as black player with wrong username"), authToken);
+                } else {
 
-                connections.add(authToken, session);
-                var notificationMessage = new smNotification(String.format("%s joined as the %s player", playerName, teamColor));
-                var loadGameMessage = new smLoadGame(gameData.game());
-                connections.rootBroadcast(loadGameMessage, authToken);
-                connections.excludeRootBroadcast(notificationMessage, authToken);
+                    var notificationMessage = new smNotification(String.format("%s joined as the %s player", playerName, playerColor));
+                    var loadGameMessage = new smLoadGame(gameData.game());
+                    connections.rootBroadcast(loadGameMessage, authToken);
+                    connections.excludeRootBroadcast(notificationMessage, authToken);
+                }
             }
+
         } catch (DataAccessException e) {
             connections.broadcast(new smError("Error: " + e));
         }
     }
 
-    private void joinObserver(String observerName, String authToken, Session session, int gameID) throws IOException {
-
-
+    private void joinObserver(String authToken, Session session, int gameID) throws IOException {
+        connections.add(authToken, session);
         try {
             GameData gameData = dataAccess.getGame(gameID);
-            if (gameData == null) {
-                connections.broadcast(new smError("Error: Game does not exist"));
+            AuthData authData = dataAccess.getAuthToken(authToken);
+            if (authData == null) {
+                connections.rootBroadcast(new smError("Error: invalid authToken"), authToken);
             } else {
-                connections.add(authToken, session);
-                var notificationMessage = new smNotification(String.format("%s joined as an observer", observerName));
-                connections.excludeRootBroadcast(notificationMessage, authToken);
-                var loadGameMessage = new smLoadGame(gameData.game());
-                connections.rootBroadcast(loadGameMessage, authToken);
+                String playerName = authData.username();
+                if (gameData == null) {
+                    connections.rootBroadcast(new smError("Error: Game does not exist"), authToken);
+                } else {
+                    var notificationMessage = new smNotification(String.format("%s joined as an observer", playerName));
+                    var loadGameMessage = new smLoadGame(gameData.game());
+                    connections.rootBroadcast(loadGameMessage, authToken);
+                    connections.excludeRootBroadcast(notificationMessage, authToken);
+                }
             }
+
         } catch (DataAccessException e) {
             connections.broadcast(new smError("Error: " + e));
         }
@@ -98,8 +114,15 @@ public class WebSocketHandler {
 
     // see: https://github.com/softwareconstruction240/softwareconstruction/blob/main/chess/6-gameplay/gameplay.md#notifications
     private void makeMove(int gameID, ChessMove move, String playerName) throws IOException { // need to add handling for errors
+        // if not gameIsOver:
         try {
             dataAccess.getGame(gameID).game().makeMove(move);
+//            var newGame = dataAccess.getGame(gameID).game().makeMove(move);
+            // use updateGame to update the game in the database
+            // get game and store
+            // use makeMove on stored game
+            // use updateGame with stored game
+
         } catch (DataAccessException e) {
             connections.broadcast(new smError("Error: " + e));
         } catch (InvalidMoveException e) {

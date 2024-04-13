@@ -31,6 +31,8 @@ public class ChessClient {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
         this.serverMessageHandler = serverMessageHandler;
+        ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+
 //        server.clearDatabase();
     }
 
@@ -48,6 +50,11 @@ public class ChessClient {
                 case "observe" -> observe(params);
                 case "logout" -> logout();
                 case "quit" -> quit();
+//                case "redraw" -> redraw();
+//                case "leave" -> leave();
+//                case "makeMove" -> makeMove(params);
+//                case "resign" -> resign();
+//                case "highlight" -> highlight(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -150,7 +157,6 @@ public class ChessClient {
             } else if (color.equalsIgnoreCase("black")) {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
 
 
             if (game.whiteUsername() != null && game.blackUsername() != null) {
@@ -188,6 +194,10 @@ public class ChessClient {
             result.append("Observing game ").append(".");
             result.append(createStartingBoard());
             state = State.OBSERVINGGAME;
+
+
+            ws.joinObserver(id, authToken, username);
+
             return result.toString();
         }
         throw new ResponseException("Expected: <ID>");
@@ -228,11 +238,11 @@ public class ChessClient {
                     - the chess board""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                     leave""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                     - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                    make move <STARTING_COORDINATES> <ENDING_COORDINATES>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    makeMove <STARTING_COORDINATES> <ENDING_COORDINATES>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                     - to move a piece""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                     resign""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                     - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                    highlight legal moves""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                    highlight <PIECE_COORDINATES>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                     - for a piece""" + RESET_TEXT_COLOR;
         }
         return SET_TEXT_COLOR_BLUE + "  " + """
@@ -242,7 +252,7 @@ public class ChessClient {
                 - the chess board""" + SET_TEXT_COLOR_BLUE + "\n  " + """
                 leave""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                 - the game""" + SET_TEXT_COLOR_BLUE + "\n  " + """
-                highlight legal moves""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
+                highlight <PIECE_COORDINATES>""" + SET_TEXT_COLOR_LIGHT_GREY + " " + """
                 - for a piece""" + RESET_TEXT_COLOR;
     }
 

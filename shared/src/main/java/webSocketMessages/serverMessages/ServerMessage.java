@@ -14,7 +14,7 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
     private ChessGame chessGame;
     private String message;
-
+    public String errorMessage;
     @Override
     public String toString() {
         return new Gson().toJson(this);
@@ -24,6 +24,9 @@ public class ServerMessage {
     }
 
     public String getMessage() {
+        if (message == null) {
+            return errorMessage;
+        }
         return message;
     }
 
@@ -32,5 +35,8 @@ public class ServerMessage {
     }
     public void setMessage(String message) {
         this.message = message;
+    }
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

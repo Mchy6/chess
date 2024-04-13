@@ -9,7 +9,7 @@ public class ugcMakeMove extends UserGameCommand {
         this.setAuthToken(authToken);
         this.commandType = CommandType.JOIN_PLAYER;
         this.gameID = gameID;
-        this.teamColor = teamColor;
+        this.playerColor = teamColor;
         this.username = username;
         this.move = move;
     }

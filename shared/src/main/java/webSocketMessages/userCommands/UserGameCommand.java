@@ -21,7 +21,7 @@ public class UserGameCommand {
     public String username;
     public int gameID;
     public ChessMove move;
-    public ChessGame.TeamColor teamColor;
+    public ChessGame.TeamColor playerColor;
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
     }
@@ -35,8 +35,8 @@ public class UserGameCommand {
     public String getUsername() {
         return username;
     }
-    public ChessGame.TeamColor getTeamColor() {
-        return teamColor;
+    public ChessGame.TeamColor getPlayerColor() {
+        return playerColor;
     }
     public int getID() {
         return gameID;

@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.ugcJoinObserver;
 import webSocketMessages.userCommands.ugcJoinPlayer;
 
 import javax.websocket.*;
@@ -47,16 +48,28 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-        public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken, String playerName) throws ResponseException {
-            try {
-                var ugc = new ugcJoinPlayer(gameID, playerColor, authToken, playerName);
-                System.out.println("Sending message: " + new Gson().toJson(ugc));
-                this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+    public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken, String playerName) throws ResponseException {
+        try {
+//            var ugc = new ugcJoinPlayer(gameID, playerColor, authToken, playerName);
+            var ugc = "alksdjfl;akjsdf";
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
 
-            } catch (IOException ex) {
-                throw new ResponseException(ex.getMessage());
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
         }
     }
+    public void joinObserver(int gameID, String authToken, String observerName) throws ResponseException {
+        try {
+            var ugc = new ugcJoinObserver(gameID, authToken);
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
 //
 //    public void leavePetShop(String visitorName) throws ResponseException {
 //        try {

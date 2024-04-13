@@ -4,9 +4,10 @@ import chess.ChessGame;
 
 public class smError extends ServerMessage {
 
-    public smError(String message) {
+    public smError(String errorMessage) {
         this.serverMessageType = ServerMessageType.ERROR;
-        this.setMessage(message);
+//        this.setMessage(errorMessage);
+        this.errorMessage = errorMessage;
     }
 
 }

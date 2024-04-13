@@ -111,6 +111,11 @@ public class MySqlDataAccess implements DataAccess {
 //int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game
     @Override
     public GameData createGame(GameData gameData) throws DataAccessException {
+        // if game == null make a new game, make sure it has team color (start with white) and board
+        if (gameData.game() == null) {
+            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), new ChessGame());
+        }
+        
         String sql = "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
         var json = new Gson().toJson(gameData); // Assuming gameData has a method to convert itself to JSON
         executeUpdate(sql, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
