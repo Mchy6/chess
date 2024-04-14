@@ -115,7 +115,7 @@ public class MySqlDataAccess implements DataAccess {
         if (gameData.game() == null) {
             gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), new ChessGame());
         }
-        
+
         String sql = "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
         var json = new Gson().toJson(gameData); // Assuming gameData has a method to convert itself to JSON
         executeUpdate(sql, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
@@ -150,7 +150,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData gameData) throws DataAccessException {
         String sql = "UPDATE gameData SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?";
-        var json = new Gson().toJson(gameData); // Assuming gameData has a method to convert itself to JSON
+        var json = new Gson().toJson(gameData.game()); // Assuming gameData has a method to convert itself to JSON
         executeUpdate(sql, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json, gameData.gameID());
     }
 

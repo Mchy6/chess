@@ -13,6 +13,7 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor currentTeamColor;
+    private boolean gameIsOver;
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -34,6 +35,17 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         this.currentTeamColor = team;
+    }
+
+    public void setGameIsOverTrue() {
+        this.gameIsOver = true;
+    }
+
+    public boolean isGameOver() {
+        if (this.isInCheckmate(TeamColor.WHITE) || this.isInCheckmate(TeamColor.BLACK) || this.isInStalemate(TeamColor.WHITE) || this.isInStalemate(TeamColor.BLACK)) {
+            this.setGameIsOverTrue();
+        }
+        return this.gameIsOver;
     }
 
     /**
@@ -191,6 +203,7 @@ public class ChessGame {
 
         // Check for checkmate
         if (isInCheck(teamColor) && allMoves.isEmpty()) {
+            setGameIsOverTrue();
             return true;
         }
         return false;
@@ -209,6 +222,7 @@ public class ChessGame {
 
         // Check for stalemate
         if (!isInCheck(teamColor) && allMoves.isEmpty()) {
+            setGameIsOverTrue();
             return true;
         }
         return false;

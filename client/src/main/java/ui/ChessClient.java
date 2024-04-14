@@ -4,6 +4,8 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import response.CreateGameResponse;
@@ -25,6 +27,7 @@ public class ChessClient {
     private Collection<GameData> gameCollection;
 
     private Map<Integer, Integer> gameMap;
+    private int gameID;
 
 
     public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) throws ResponseException {
@@ -52,7 +55,7 @@ public class ChessClient {
                 case "quit" -> quit();
 //                case "redraw" -> redraw();
 //                case "leave" -> leave();
-//                case "makeMove" -> makeMove(params);
+                case "makemove" -> makeMove(params);
 //                case "resign" -> resign();
 //                case "highlight" -> highlight(params);
                 default -> help();
@@ -172,12 +175,13 @@ public class ChessClient {
 
             }
 
-            ws.joinPlayer(id, teamColor, authToken, username);
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
-            result.append("Joined game ").append(" as the ").append(color).append(" player.");
+            result.append("Joined game").append(" as the ").append(color).append(" player.");
             result.append(createStartingBoard());
 
+            ws.joinPlayer(teamColor, authToken, id);
+            this.gameID = id;
 
             state = State.PLAYINGGAME;
             return result.toString();
@@ -196,11 +200,27 @@ public class ChessClient {
             state = State.OBSERVINGGAME;
 
 
-            ws.joinObserver(id, authToken, username);
+            ws.joinObserver(authToken, id);
+            this.gameID = id;
 
             return result.toString();
         }
         throw new ResponseException("Expected: <ID>");
+    }
+
+    public String makeMove(String ... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 2) {
+            var start = params[0];
+            var end = params[1];
+            var move = stringToChessMove(start, end);
+            System.out.println("ChessMove move: " + move);
+
+            ws.makeMove(authToken, gameID, move);
+        } else {
+            throw new ResponseException("Expected: <STARTING_COORDINATES> <ENDING_COORDINATES>");
+        }
+        return "";
     }
 
     public String help() {
@@ -308,6 +328,28 @@ public class ChessClient {
         return "quit";
     }
 
+    private static ChessMove stringToChessMove(String startString, String endString) {
+        // Remove the surrounding parentheses
+        startString = startString.replaceAll("()", "");
+        endString = endString.replaceAll("()", "");
+
+        // Split the strings into the x and y coordinates
+        String[] startCoords = startString.split(", ");
+        String[] endCoords = endString.split(", ");
+
+        // Extract the x and y coordinates
+        int startX = Integer.parseInt(startCoords[0]);
+        int startY = Integer.parseInt(startCoords[1]);
+        int endX = Integer.parseInt(endCoords[0]);
+        int endY = Integer.parseInt(endCoords[1]);
+
+        // Create ChessPosition objects for the start and end positions
+        ChessPosition start = new ChessPosition((char)('a' + startX - 1), startY);
+        ChessPosition end = new ChessPosition((char)('a' + endX - 1), endY);
+
+        // Create a new ChessMove object
+        return new ChessMove(start, end, null);
+    }
 }
 
 // fails when 2 players join same game as same color

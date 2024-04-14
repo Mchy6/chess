@@ -1,12 +1,11 @@
 package ui.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.UserGameCommand;
-import webSocketMessages.userCommands.ugcJoinObserver;
-import webSocketMessages.userCommands.ugcJoinPlayer;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -48,10 +47,9 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinPlayer(int gameID, ChessGame.TeamColor playerColor, String authToken, String playerName) throws ResponseException {
+    public void joinPlayer(ChessGame.TeamColor playerColor, String authToken, int gameID) throws ResponseException {
         try {
-//            var ugc = new ugcJoinPlayer(gameID, playerColor, authToken, playerName);
-            var ugc = "alksdjfl;akjsdf";
+            var ugc = new ugcJoinPlayer(playerColor, authToken, gameID);
             System.out.println("Sending message: " + new Gson().toJson(ugc));
             this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
 
@@ -59,12 +57,42 @@ public class WebSocketFacade extends Endpoint {
             throw new ResponseException(ex.getMessage());
         }
     }
-    public void joinObserver(int gameID, String authToken, String observerName) throws ResponseException {
+    public void joinObserver(String authToken, int gameID) throws ResponseException {
         try {
-            var ugc = new ugcJoinObserver(gameID, authToken);
+            var ugc = new ugcJoinObserver(authToken, gameID);
             System.out.println("Sending message: " + new Gson().toJson(ugc));
             this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
 
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void makeMove(String authToken, int gameID, ChessMove move) throws ResponseException {
+        try {
+            var ugc = new ugcMakeMove(authToken, gameID, move);
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void resign(String authToken, int gameID) throws ResponseException {
+        try {
+            var ugc = new ugcResign(authToken, gameID);
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void leave(String authToken, String username) throws ResponseException {
+        try {
+            var ugc = new ugcLeave(authToken, username);
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }
