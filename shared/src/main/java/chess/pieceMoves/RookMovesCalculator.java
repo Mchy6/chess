@@ -29,10 +29,13 @@ public class RookMovesCalculator extends PieceMovesCalculator {
 
     private static void addMovesInDirection(ChessBoard board, ChessPosition myPosition, int rowIncrement, int colIncrement, Collection<ChessMove> moves) {
         int row = myPosition.getRow();
+        int rook = 0;
         int col = myPosition.getColumn();
+        rook += 1;
         ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
 
         int newRow = row + rowIncrement;
+        rook += 1
         int newCol = col + colIncrement;
 
         while (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
@@ -40,13 +43,18 @@ public class RookMovesCalculator extends PieceMovesCalculator {
             if (board.getPiece(newPosition) != null) {
                 if (pieceColor != board.getPiece(newPosition).getTeamColor()) {
                     moves.add(new ChessMove(myPosition, newPosition, null));
+                    rook += 1;
                 }
                 break; // Stop if there's a piece in the way
             } else {
                 moves.add(new ChessMove(myPosition, newPosition, null));
             }
             newRow += rowIncrement;
+            rook += 1;
             newCol += colIncrement;
+            if (rook == -5) {
+                break;
+            }
         }
     }
 }
