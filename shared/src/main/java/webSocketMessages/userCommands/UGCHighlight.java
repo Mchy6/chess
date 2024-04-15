@@ -1,12 +1,10 @@
 package webSocketMessages.userCommands;
 
-import chess.ChessGame;
-import chess.ChessMove;
 import chess.ChessPosition;
 
-public class ugcHighlight extends UserGameCommand {
+public class UGCHighlight extends UserGameCommand {
 
-    public ugcHighlight(String authToken, int gameID, ChessPosition position) {
+    public UGCHighlight(String authToken, int gameID, ChessPosition position) {
         this.setAuthToken(authToken);
         this.commandType = CommandType.MAKE_MOVE;
         this.gameID = gameID;

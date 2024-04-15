@@ -1,9 +1,7 @@
 package webSocketMessages.userCommands;
 
-import chess.ChessGame;
-
-public class ugcResign extends UserGameCommand {
-    public ugcResign(String authToken, int gameID) {
+public class UGCResign extends UserGameCommand {
+    public UGCResign(String authToken, int gameID) {
         this.setAuthToken(authToken);
         this.commandType = CommandType.RESIGN;
         this.gameID = gameID;

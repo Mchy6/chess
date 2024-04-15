@@ -4,7 +4,7 @@ import chess.*;
 
 import java.util.Collection;
 
-public class smLoadGame extends ServerMessage {
+public class SMLoadGame extends ServerMessage {
     private ChessGame game;
     private static ChessGame.TeamColor teamColor;
     private static final String UNICODE_ESCAPE = "\u001b";
@@ -19,7 +19,7 @@ public class smLoadGame extends ServerMessage {
     public static final String SET_BG_COLOR_GREEN = SET_BG_COLOR + "46m";
 
 
-    public smLoadGame(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition highlightPosition) {
+    public SMLoadGame(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition highlightPosition) {
         this.teamColor = teamColor;
         this.serverMessageType = ServerMessageType.LOAD_GAME;
         if(highlightPosition != null) {

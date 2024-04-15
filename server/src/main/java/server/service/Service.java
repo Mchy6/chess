@@ -92,8 +92,8 @@ public class Service {
         if (createGameRequest.getGameName() == null) {
             throw new BadRequestException("Error: bad request");
         }
-        int ID = new Random().nextInt(1000000);
-        return new CreateGameResponse(dataAccess.createGame(new GameData(ID, null, null, createGameRequest.getGameName(), new ChessGame())).gameID());
+        int id = new Random().nextInt(1000000);
+        return new CreateGameResponse(dataAccess.createGame(new GameData(id, null, null, createGameRequest.getGameName(), new ChessGame())).gameID());
     }
 
     public void joinGame(JoinGameRequest joinGameRequest) throws UnauthorizedException, DataAccessException, BadRequestException, AlreadyTakenException {
@@ -134,9 +134,5 @@ public class Service {
         // how do I update when a move is made?
         // Should it take in gameID or gameData?
         // Where do I get black/white player names?
-    }
-
-    public String hashPassword(String password) {
-        return password;
     }
 }

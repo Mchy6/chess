@@ -64,7 +64,6 @@ public class ConnectionManager {
             }
         }
 
-
         var connections = allGamesMap.get(gameID);
         var removeList = new ArrayList<Connection>();
 
