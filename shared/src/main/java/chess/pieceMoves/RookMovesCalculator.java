@@ -35,7 +35,7 @@ public class RookMovesCalculator extends PieceMovesCalculator {
         ChessGame.TeamColor pieceColor = board.getPiece(myPosition).getTeamColor();
 
         int newRow = row + rowIncrement;
-        rook += 1
+        rook += 1;
         int newCol = col + colIncrement;
 
         while (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
