@@ -52,7 +52,7 @@ public class WebSocketHandler {
     }
 
     private void joinPlayer(ChessGame.TeamColor playerColor, String authToken, Session session, int gameID) throws IOException, InvalidMoveException, DataAccessException {
-        connections.add(authToken, session);
+        connections.add(authToken, session, playerColor);
         try {
             GameData gameData = dataAccess.getGame(gameID);
             AuthData authData = dataAccess.getAuthToken(authToken);
@@ -71,7 +71,7 @@ public class WebSocketHandler {
                 } else {
 
                     var notificationMessage = new SMNotification(String.format("%s joined as the %s player", playerName, playerColor));
-                    var loadGameMessage = new SMLoadGame(gameData.game(), playerColor, null);
+                    var loadGameMessage = new SMLoadGame(gameData.game());
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -83,7 +83,7 @@ public class WebSocketHandler {
     }
 
     private void joinObserver(String authToken, Session session, int gameID) throws IOException {
-        connections.add(authToken, session);
+        connections.add(authToken, session, ChessGame.TeamColor.WHITE);
         try {
             GameData gameData = dataAccess.getGame(gameID);
             AuthData authData = dataAccess.getAuthToken(authToken);
@@ -95,7 +95,7 @@ public class WebSocketHandler {
                     connections.rootBroadcast(new SMError("Error: Game does not exist"), authToken);
                 } else {
                     var notificationMessage = new SMNotification(String.format("%s joined as an observer", observerName));
-                    var loadGameMessage = new SMLoadGame(gameData.game(), ChessGame.TeamColor.WHITE, null);
+                    var loadGameMessage = new SMLoadGame(gameData.game());
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -149,9 +149,9 @@ public class WebSocketHandler {
                 var notificationMessage = new SMNotification(String.format("%s moved %s to %s", playerName, startPosition, endPosition));
                 connections.excludeRootBroadcast(notificationMessage, authToken);
 
-                var loadGameMessageRoot = new SMLoadGame(game, game.getTeamTurn(), null);
+                var loadGameMessageRoot = new SMLoadGame(game);
                 connections.rootBroadcast(loadGameMessageRoot, authToken);
-                var loadGameMessageOpponent = new SMLoadGame(game, game.getTeamTurn() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE, null);
+                var loadGameMessageOpponent = new SMLoadGame(game);
                 connections.excludeRootBroadcast(loadGameMessageOpponent, authToken);
 //                var loadGameMessageObserver = new smLoadGame(game, ChessGame.TeamColor.WHITE);
 //                connections.observerBroadcast(loadGameMessageObserver);

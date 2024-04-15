@@ -30,6 +30,7 @@ public class ChessClient {
 
     private Map<Integer, Integer> gameMap;
     private int gameID;
+    private ChessGame currentGame; // save so it can be used for highlighting/redraw, should be updated with every makemove and join
 
 
     public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) throws ResponseException {

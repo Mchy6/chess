@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessGame;
 import org.eclipse.jetty.websocket.api.Session;
 import webSocketMessages.serverMessages.ServerMessage;
 
@@ -8,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static webSocketMessages.serverMessages.ServerMessage.ServerMessageType.LOAD_GAME;
+
 public class ConnectionManager {
     public final ConcurrentHashMap<Integer, ConcurrentHashMap<String, Connection>> allGamesMap = new ConcurrentHashMap<>();
 
 
-    public void add(String authToken, Session session) {
+    public void add(String authToken, Session session, ChessGame.TeamColor playerColor) {
         int gameID = -1;
 
         for (ConcurrentHashMap.Entry<Integer, ConcurrentHashMap<String, Connection>> entry : allGamesMap.entrySet()) {
@@ -22,7 +25,7 @@ public class ConnectionManager {
             }
         }
 
-        Connection connection = new Connection(authToken, session);
+        Connection connection = new Connection(authToken, session, playerColor);
         ConcurrentHashMap<String, Connection> gameMap = allGamesMap.get(gameID);
 
         // If outerKey is not present, create a new innerMap and put it in outerMap
@@ -69,7 +72,11 @@ public class ConnectionManager {
 
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                c.send(serverMessage.toString());
+                if (serverMessage.getServerMessageType() == LOAD_GAME) {
+                    serverMessage.setPlayerColor(c.getTeamColor());
+                } else {
+                    c.send(serverMessage.toString());
+                }
             } else {
                 removeList.add(c);
             }
@@ -95,7 +102,11 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (!c.authToken.equals(rootAuthToken)) {
-                    c.send(serverMessage.toString());
+                    if (serverMessage.getServerMessageType() == LOAD_GAME) {
+                        serverMessage.setPlayerColor(c.getTeamColor());
+                    } else {
+                        c.send(serverMessage.toString());
+                    }
                 }
             }
         }
@@ -115,7 +126,11 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (c.authToken.equals(rootAuthToken)) {
-                    c.send(serverMessage.toString());
+                    if (serverMessage.getServerMessageType() == LOAD_GAME) {
+                        serverMessage.setPlayerColor(c.getTeamColor());
+                    } else {
+                        c.send(serverMessage.toString());
+                    }
                 }
             }
         }

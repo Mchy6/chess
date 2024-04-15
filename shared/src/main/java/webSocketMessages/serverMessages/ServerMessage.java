@@ -3,7 +3,11 @@ package webSocketMessages.serverMessages;
 import chess.ChessGame;
 import com.google.gson.Gson;
 
+import static webSocketMessages.serverMessages.SMLoadGame.drawChessBoard;
+
 public class ServerMessage {
+
+    public ChessGame game;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -15,6 +19,8 @@ public class ServerMessage {
     private ChessGame chessGame;
     private String message;
     public String errorMessage;
+    private ChessGame.TeamColor playerColor;
+
     @Override
     public String toString() {
         return new Gson().toJson(this);
@@ -38,5 +44,10 @@ public class ServerMessage {
     }
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    public void setPlayerColor(ChessGame.TeamColor playerColor) {
+        this.playerColor = playerColor;
+        this.setMessage(drawChessBoard(this.game, playerColor));
     }
 }

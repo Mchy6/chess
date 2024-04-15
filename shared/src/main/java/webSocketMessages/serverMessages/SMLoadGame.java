@@ -5,8 +5,6 @@ import chess.*;
 import java.util.Collection;
 
 public class SMLoadGame extends ServerMessage {
-    private ChessGame game;
-    private static ChessGame.TeamColor teamColor;
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
     private static final String SET_TEXT_COLOR = UNICODE_ESCAPE + "[38;5;";
@@ -19,25 +17,15 @@ public class SMLoadGame extends ServerMessage {
     public static final String SET_BG_COLOR_GREEN = SET_BG_COLOR + "46m";
 
 
-    public SMLoadGame(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition highlightPosition) {
-        this.teamColor = teamColor;
+    public SMLoadGame(ChessGame game) {
         this.serverMessageType = ServerMessageType.LOAD_GAME;
-        if(highlightPosition != null) {
-            this.setMessage(highlightBoard(game, highlightPosition));
-        } else {
-            this.setMessage(drawChessBoard(game));
-        }
-        this.setMessage(drawChessBoard(game));
+        this.setMessage("Error: color has not been defined yet");
         this.game = game;
     }
 
-    public ChessGame getGame() {
-        return game;
-    }
 
-    public static String drawChessBoard(ChessGame game) {
+    public static String drawChessBoard(ChessGame game, ChessGame.TeamColor playerColor) {
         ChessBoard board = game.getBoard();
-        ChessGame.TeamColor currentTeamColor = teamColor;
 
         System.out.println("drawChessBoard called");
         StringBuilder sb = new StringBuilder();
@@ -50,9 +38,9 @@ public class SMLoadGame extends ServerMessage {
 
         sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
 
-        int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
-        int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
-        int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+        int startRow = playerColor == ChessGame.TeamColor.BLACK ? 8 : 1;
+        int endRow = playerColor == ChessGame.TeamColor.BLACK ? 0 : 9;
+        int rowStep = playerColor == ChessGame.TeamColor.BLACK ? -1 : 1;
 
         for (int row = startRow; row != endRow; row += rowStep) {
             sb.append(" ").append(row).append(" ");
@@ -76,10 +64,10 @@ public class SMLoadGame extends ServerMessage {
         return sb.toString();
     }
 
-    public static String highlightBoard(ChessGame game, ChessPosition position) {
+    public static String highlightBoard(ChessGame game, ChessPosition position, ChessGame.TeamColor currentTeamColor) {
         ChessBoard board = game.getBoard();
         Collection<ChessMove> moves = game.validMoves(position);
-        ChessGame.TeamColor currentTeamColor = game.getTeamTurn();
+
 
         System.out.println("drawChessBoard called");
         StringBuilder sb = new StringBuilder();
