@@ -1,13 +1,11 @@
 package ui;
 
-import chess.*;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
 
-import static chess.ChessPiece.PieceType.BISHOP;
 import static ui.EscapeSequences.*;
 
 public class Repl implements ServerMessageHandler {

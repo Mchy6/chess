@@ -1,12 +1,12 @@
 package webSocketMessages.serverMessages;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.Collection;
 
 public class smLoadGame extends ServerMessage {
     private ChessGame game;
+    private boolean highlight;
     private static ChessGame.TeamColor teamColor;
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
@@ -17,10 +17,18 @@ public class smLoadGame extends ServerMessage {
     public static final String SET_TEXT_COLOR_BLUE = SET_TEXT_COLOR + "12m";
     public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
     public static final String RESET_BG_COLOR = SET_BG_COLOR + "0m";
+    public static final String SET_BG_COLOR_GREEN = SET_BG_COLOR + "46m";
+
 
     public smLoadGame(ChessGame game, ChessGame.TeamColor teamColor) {
         this.teamColor = teamColor;
+        this.highlight = false;
         this.serverMessageType = ServerMessageType.LOAD_GAME;
+        if(this.highlight) {
+//            this.setMessage(highlight(game));
+        } else {
+            this.setMessage(drawChessBoard(game));
+        }
         this.setMessage(drawChessBoard(game));
         this.game = game;
     }
@@ -29,7 +37,12 @@ public class smLoadGame extends ServerMessage {
         return game;
     }
     public String getMessage() {
-        return drawChessBoard(game);
+        if(highlight) {
+//            return highlight(game);
+            return "";
+        } else {
+            return drawChessBoard(game);
+        }
     }
 
 
@@ -75,22 +88,25 @@ public class smLoadGame extends ServerMessage {
         return sb.toString();
     }
 
-    private static char getPieceSymbol(ChessPiece piece) {
-        switch (piece.getPieceType()) {
-            case ROOK:
-                return 'R';
-            case KNIGHT:
-                return 'N';
-            case BISHOP:
-                return 'B';
-            case QUEEN:
-                return 'Q';
-            case KING:
-                return 'K';
-            case PAWN:
-                return 'P';
-            default:
-                return ' ';
-        }
+    public static String highlight(ChessGame game, ChessPosition position) {
+        ChessBoard board = game.getBoard();
+        Collection<ChessMove> moves = game.validMoves(position);
+
+
+
     }
+
+    private static char getPieceSymbol(ChessPiece piece) {
+        return switch (piece.getPieceType()) {
+            case ROOK -> 'R';
+            case KNIGHT -> 'N';
+            case BISHOP -> 'B';
+            case QUEEN -> 'Q';
+            case KING -> 'K';
+            case PAWN -> 'P';
+            default -> ' ';
+        };
+    }
+
+
 }
