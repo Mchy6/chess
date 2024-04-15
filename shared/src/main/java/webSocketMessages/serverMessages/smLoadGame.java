@@ -7,6 +7,7 @@ import chess.ChessPosition;
 
 public class smLoadGame extends ServerMessage {
     private ChessGame game;
+    private static ChessGame.TeamColor teamColor;
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
     private static final String SET_TEXT_COLOR = UNICODE_ESCAPE + "[38;5;";
@@ -17,9 +18,10 @@ public class smLoadGame extends ServerMessage {
     public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
     public static final String RESET_BG_COLOR = SET_BG_COLOR + "0m";
 
-    public smLoadGame(ChessGame game) {
+    public smLoadGame(ChessGame game, ChessGame.TeamColor teamColor) {
+        this.teamColor = teamColor;
         this.serverMessageType = ServerMessageType.LOAD_GAME;
-        this.setMessage("placeholder, should draw chessboard");
+        this.setMessage(drawChessBoard(game));
         this.game = game;
     }
 
@@ -27,13 +29,15 @@ public class smLoadGame extends ServerMessage {
         return game;
     }
     public String getMessage() {
-        return "placeholder, should draw chessboard";
-//        return drawChessBoard(game.getBoard());
+        return drawChessBoard(game);
     }
 
 
 
-    public static String drawChessBoard(ChessBoard board) {
+    public static String drawChessBoard(ChessGame game) {
+        ChessBoard board = game.getBoard();
+        ChessGame.TeamColor currentTeamColor = teamColor;
+
         System.out.println("drawChessBoard called");
         StringBuilder sb = new StringBuilder();
         String l = SET_BG_COLOR_LIGHT_GREY;
@@ -43,9 +47,13 @@ public class smLoadGame extends ServerMessage {
         String w = SET_TEXT_COLOR_WHITE;
         String c = RESET_BG_COLOR;
 
-        sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
+        sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
 
-        for (int row = 8; row >= 1; row--) {
+        int startRow = currentTeamColor == ChessGame.TeamColor.WHITE ? 8 : 1;
+        int endRow = currentTeamColor == ChessGame.TeamColor.WHITE ? 0 : 9;
+        int rowStep = currentTeamColor == ChessGame.TeamColor.WHITE ? -1 : 1;
+
+        for (int row = startRow; row != endRow; row += rowStep) {
             sb.append(" ").append(row).append(" ");
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
@@ -54,7 +62,7 @@ public class smLoadGame extends ServerMessage {
                     sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
                 } else {
                     char pieceChar = getPieceSymbol(piece);
-                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.WHITE ? r : b)
+                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.WHITE ? b : r)
                             .append((row + col) % 2 == 0 ? l : d)
                             .append(" ").append(pieceChar).append(" ")
                             .append(c).append(w);
@@ -63,7 +71,7 @@ public class smLoadGame extends ServerMessage {
             sb.append(" ").append(row).append("\n");
         }
 
-        sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n\n");
+        sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
         return sb.toString();
     }
 
