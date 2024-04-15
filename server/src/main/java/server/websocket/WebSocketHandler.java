@@ -76,7 +76,7 @@ public class WebSocketHandler {
                 } else {
 
                     var notificationMessage = new smNotification(String.format("%s joined as the %s player", playerName, playerColor));
-                    var loadGameMessage = new smLoadGame(gameData.game(), playerColor);
+                    var loadGameMessage = new smLoadGame(gameData.game(), playerColor, null);
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -100,7 +100,7 @@ public class WebSocketHandler {
                     connections.rootBroadcast(new smError("Error: Game does not exist"), authToken);
                 } else {
                     var notificationMessage = new smNotification(String.format("%s joined as an observer", observerName));
-                    var loadGameMessage = new smLoadGame(gameData.game(), ChessGame.TeamColor.WHITE);
+                    var loadGameMessage = new smLoadGame(gameData.game(), ChessGame.TeamColor.WHITE, null);
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -154,9 +154,9 @@ public class WebSocketHandler {
                 var notificationMessage = new smNotification(String.format("%s moved %s to %s", playerName, startPosition, endPosition));
                 connections.excludeRootBroadcast(notificationMessage, authToken);
 
-                var loadGameMessageRoot = new smLoadGame(game, game.getTeamTurn());
+                var loadGameMessageRoot = new smLoadGame(game, game.getTeamTurn(), null);
                 connections.rootBroadcast(loadGameMessageRoot, authToken);
-                var loadGameMessageOpponent = new smLoadGame(game, game.getTeamTurn() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE);
+                var loadGameMessageOpponent = new smLoadGame(game, game.getTeamTurn() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE, null);
                 connections.excludeRootBroadcast(loadGameMessageOpponent, authToken);
 //                var loadGameMessageObserver = new smLoadGame(game, ChessGame.TeamColor.WHITE);
 //                connections.observerBroadcast(loadGameMessageObserver);

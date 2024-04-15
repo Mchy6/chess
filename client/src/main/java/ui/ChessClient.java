@@ -225,6 +225,25 @@ public class ChessClient {
         return "";
     }
 
+    public String highlight(String ... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 1) {
+            var position = params[0];
+
+            String removeParenthesis = position.replaceAll("[()]", "");
+
+            // Split the strings into the x and y coordinates
+            String[] coordinates = removeParenthesis.split(",");
+
+            int xCoordinate = Integer.parseInt(coordinates[0]);
+            int yCoordinate = (int) coordinates[1].charAt(0) - 'a' + 1;
+
+            var pos = new ChessPosition(xCoordinate, yCoordinate);
+//            return ws.highlight(authToken, gameID, pos);
+        }
+        throw new ResponseException("Expected: <PIECE_COORDINATES>");
+    }
+
     public String help() {
         if (state == State.LOGGEDOUT) {
             return SET_TEXT_COLOR_BLUE + "  " + """

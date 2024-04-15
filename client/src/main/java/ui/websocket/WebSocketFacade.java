@@ -1,7 +1,6 @@
 package ui.websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
+import chess.*;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -75,6 +74,16 @@ public class WebSocketFacade extends Endpoint {
             this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void highlight(String authToken, int gameID, ChessPosition position) {
+        try {
+            var ugc = new ugcHighlight(authToken, gameID, position);
+            System.out.println("Sending message: " + new Gson().toJson(ugc));
+            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
