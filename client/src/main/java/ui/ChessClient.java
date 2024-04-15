@@ -1,3 +1,5 @@
+//makemove (2,a) (3,a)
+
 package ui;
 
 import java.lang.reflect.Array;
@@ -330,22 +332,22 @@ public class ChessClient {
 
     private static ChessMove stringToChessMove(String startString, String endString) {
         // Remove the surrounding parentheses
-        startString = startString.replaceAll("()", "");
-        endString = endString.replaceAll("()", "");
+        startString = startString.replaceAll("[()]", "");
+        endString = endString.replaceAll("[()]", "");
 
         // Split the strings into the x and y coordinates
-        String[] startCoords = startString.split(", ");
-        String[] endCoords = endString.split(", ");
+        String[] startCoords = startString.split(",");
+        String[] endCoords = endString.split(",");
 
         // Extract the x and y coordinates
         int startX = Integer.parseInt(startCoords[0]);
-        int startY = Integer.parseInt(startCoords[1]);
+        int startY = (int) startCoords[1].charAt(0) - 'a' + 1;
         int endX = Integer.parseInt(endCoords[0]);
-        int endY = Integer.parseInt(endCoords[1]);
+        int endY = (int) endCoords[1].charAt(0) - 'a' + 1;
 
         // Create ChessPosition objects for the start and end positions
-        ChessPosition start = new ChessPosition((char)('a' + startX - 1), startY);
-        ChessPosition end = new ChessPosition((char)('a' + endX - 1), endY);
+        ChessPosition start = new ChessPosition(startX, startY);
+        ChessPosition end = new ChessPosition(endX, endY);
 
         // Create a new ChessMove object
         return new ChessMove(start, end, null);
