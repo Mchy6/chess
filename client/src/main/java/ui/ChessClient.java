@@ -442,7 +442,6 @@ public class ChessClient {
         String w = SET_TEXT_COLOR_WHITE;
         String c = RESET_BG_COLOR;
 
-        // Add the first row based on the teamColor
         if (teamColor == ChessGame.TeamColor.WHITE) {
             sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
         } else {
@@ -483,7 +482,6 @@ public class ChessClient {
 
         return sb.toString();
     }
-
     private static char getPieceSymbol(ChessPiece piece) {
         return switch (piece.getPieceType()) {
             case ROOK -> 'R';
@@ -496,8 +494,3 @@ public class ChessClient {
         };
     }
 }
-
-// fails when 2 players join same game as same color
-// board should rotate 180
-// list games should show username of white and black player
-// make sure quit shuts down program
