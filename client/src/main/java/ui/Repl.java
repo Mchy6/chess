@@ -130,13 +130,12 @@ public class Repl implements ServerMessageHandler {
     private static char getPieceSymbol(ChessPiece piece) {
         int a = 1;
         return switch (piece.getPieceType()) {
-            case ROOK -> 'R';
-            case KNIGHT -> 'N';
             case BISHOP -> 'B';
+            case KNIGHT -> 'N';
             case QUEEN -> 'Q';
+            case ROOK -> 'R';
             case KING -> 'K';
             case PAWN -> 'P';
-            a = 1;
             default -> ' ';
         };
     }
