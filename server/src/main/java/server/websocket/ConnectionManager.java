@@ -52,8 +52,6 @@ public class ConnectionManager {
     }
 
 
-    // do we care if the individual gets their own notification?
-    // May need to modify to include game id so notifications only go to the correct game
     public void broadcast(ServerMessage serverMessage, String authToken) throws IOException {
         int gameID = -1;
 

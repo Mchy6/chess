@@ -71,7 +71,7 @@ public class WebSocketHandler {
                 } else {
 
                     var notificationMessage = new SMNotification(String.format("%s joined as the %s player", playerName, playerColor));
-                    var loadGameMessage = new SMLoadGame(gameData.game(), playerColor, null);
+                    var loadGameMessage = new SMLoadGame(gameData.game());
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -95,7 +95,7 @@ public class WebSocketHandler {
                     connections.rootBroadcast(new SMError("Error: Game does not exist"), authToken);
                 } else {
                     var notificationMessage = new SMNotification(String.format("%s joined as an observer", observerName));
-                    var loadGameMessage = new SMLoadGame(gameData.game(), ChessGame.TeamColor.WHITE, null);
+                    var loadGameMessage = new SMLoadGame(gameData.game());
                     connections.rootBroadcast(loadGameMessage, authToken);
                     connections.excludeRootBroadcast(notificationMessage, authToken);
                 }
@@ -107,7 +107,7 @@ public class WebSocketHandler {
     }
 
     // see: https://github.com/softwareconstruction240/softwareconstruction/blob/main/chess/6-gameplay/gameplay.md#notifications
-    private void makeMove(String authToken, int gameID, ChessMove move) throws IOException { // need to add handling for errors
+    private void makeMove(String authToken, int gameID, ChessMove move) throws IOException, InvalidMoveException { // need to add handling for errors
         // if not gameIsOver:
         try {
             GameData gameData = dataAccess.getGame(gameID);
@@ -135,9 +135,12 @@ public class WebSocketHandler {
                     connections.rootBroadcast(new SMError("Error: invalid move"), authToken);
                     return;
                 }
-
-                game.makeMove(move);
-//                game.setTeamTurn(game.getTeamTurn() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE);
+                try {
+                    game.makeMove(move);
+                } catch (InvalidMoveException e) {
+                    connections.rootBroadcast(new SMError("Error: invalid move (line 141 WebSocketHandler)"), authToken);
+                    return;
+                }
 
                 GameData updatedGameData = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
 
@@ -149,12 +152,9 @@ public class WebSocketHandler {
                 var notificationMessage = new SMNotification(String.format("%s moved %s to %s", playerName, startPosition, endPosition));
                 connections.excludeRootBroadcast(notificationMessage, authToken);
 
-                var loadGameMessageRoot = new SMLoadGame(game, game.getTeamTurn(), null);
-                connections.rootBroadcast(loadGameMessageRoot, authToken);
-                var loadGameMessageOpponent = new SMLoadGame(game, game.getTeamTurn() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE, null);
-                connections.excludeRootBroadcast(loadGameMessageOpponent, authToken);
-//                var loadGameMessageObserver = new smLoadGame(game, ChessGame.TeamColor.WHITE);
-//                connections.observerBroadcast(loadGameMessageObserver);
+                var loadGameMessage = new SMLoadGame(game);
+                connections.broadcast(loadGameMessage, authToken);
+
 
                 // If the move results in check or checkmate the server sends a Notification message to all clients.
 
@@ -173,8 +173,6 @@ public class WebSocketHandler {
 
         } catch (DataAccessException e) {
             connections.broadcast(new SMError("Error thrown: " + e), authToken);
-        } catch (InvalidMoveException e) {
-            throw new RuntimeException(e);
         }
     }
 

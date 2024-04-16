@@ -33,6 +33,8 @@ public class WebSocketFacade extends Endpoint {
                 public void onMessage(String message) {
                     System.out.println("Client received message: " + message);
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                    System.out.println("Message after Gson: " + serverMessage.toString());
+                    System.out.println("Game: " + serverMessage.getGame());
                     serverMessageHandler.notify(serverMessage);
                 }
             });
@@ -77,16 +79,6 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void highlight(String authToken, int gameID, ChessPosition position) {
-        try {
-            var ugc = new UGCHighlight(authToken, gameID, position);
-            System.out.println("Sending message: " + new Gson().toJson(ugc));
-            this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
-    }
-
     public void resign(String authToken, int gameID) throws ResponseException {
         try {
             int temp = 1;
@@ -102,9 +94,9 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void leave(String authToken, String username) throws ResponseException {
+    public void leave(String authToken, int gameID) throws ResponseException {
         try {
-            var ugc = new UGCLeave(authToken, username);
+            var ugc = new UGCLeave(authToken, gameID);
             System.out.println("Sending message: " + new Gson().toJson(ugc));
             this.session.getBasicRemote().sendText(new Gson().toJson(ugc));
         } catch (IOException ex) {

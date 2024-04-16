@@ -1,5 +1,9 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -9,6 +13,17 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
 public class Repl implements ServerMessageHandler {
+
+    private static final String UNICODE_ESCAPE = "\u001b";
+    private static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
+    private static final String SET_TEXT_COLOR = UNICODE_ESCAPE + "[38;5;";
+    public static final String SET_BG_COLOR_LIGHT_GREY = SET_BG_COLOR + "242m";
+    public static final String SET_BG_COLOR_DARK_GREY = SET_BG_COLOR + "235m";
+    public static final String SET_TEXT_COLOR_RED = SET_TEXT_COLOR + "160m";
+    public static final String SET_TEXT_COLOR_BLUE = SET_TEXT_COLOR + "12m";
+    public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
+    public static final String RESET_BG_COLOR = SET_BG_COLOR + "0m";
+    public static final String SET_BG_COLOR_GREEN = SET_BG_COLOR + "46m";
     private final ChessClient client;
     private State state = State.LOGGEDOUT;
 
@@ -39,15 +54,87 @@ public class Repl implements ServerMessageHandler {
     }
 
     public void notify(ServerMessage serverMessage) {
-        System.out.println("notify called" + serverMessage.toString());
-        System.out.println(serverMessage.getMessage());
+        System.out.println("Client received message in repl: " + serverMessage.toString());
+        if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+            ChessGame.TeamColor playerColor = client.getPlayerColor();
+            if (playerColor == null) {
+                playerColor = ChessGame.TeamColor.WHITE;
+            }
+            ChessGame game = serverMessage.getGame();
+            System.out.println(drawChessBoard(game, playerColor));
+        } else {
+            System.out.println("notify called" + serverMessage.toString());
+            System.out.println(serverMessage.getMessage());
+        }
         printPrompt();
-        // if (serverMessage.getType() == ServerMessageType.LOAD_GAME) {
-        // draw game
     }
 
     private void printPrompt() {
         System.out.print("\n" + SET_TEXT_COLOR_WHITE + " >>> " + SET_TEXT_COLOR_GREEN + SET_TEXT_BLINKING);
+    }
+
+    public static String drawChessBoard(ChessGame game, ChessGame.TeamColor teamColor) {
+        ChessBoard board = game.getBoard();
+        ChessGame.TeamColor currentTeamColor = teamColor;
+
+        System.out.println("drawChessBoard called");
+        StringBuilder sb = new StringBuilder();
+        String l = SET_BG_COLOR_LIGHT_GREY;
+        String d = SET_BG_COLOR_DARK_GREY;
+        String r = SET_TEXT_COLOR_RED;
+        String b = SET_TEXT_COLOR_BLUE;
+        String w = SET_TEXT_COLOR_WHITE;
+        String c = RESET_BG_COLOR;
+
+        // Add the first row based on the teamColor
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
+        }
+
+        int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
+        int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
+        int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+
+        for (int row = startRow; row != endRow; row += rowStep) {
+            sb.append(" ").append(row).append(" ");
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null) {
+                    sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
+                } else {
+                    char pieceChar = getPieceSymbol(piece);
+                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.BLACK ? b : r)
+                            .append((row + col) % 2 == 0 ? l : d)
+                            .append(" ").append(pieceChar).append(" ")
+                            .append(c).append(w);
+                }
+            }
+            sb.append(" ").append(row).append("\n");
+        }
+
+        // Add the last row based on the teamColor
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
+        }
+
+        return sb.toString();
+    }
+
+    private static char getPieceSymbol(ChessPiece piece) {
+        return switch (piece.getPieceType()) {
+            case ROOK -> 'R';
+            case KNIGHT -> 'N';
+            case BISHOP -> 'B';
+            case QUEEN -> 'Q';
+            case KING -> 'K';
+            case PAWN -> 'P';
+            default -> ' ';
+        };
     }
 
 }

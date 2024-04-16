@@ -5,9 +5,7 @@ package ui;
 import java.lang.reflect.Array;
 import java.util.*;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import exception.ResponseException;
 import ui.websocket.ServerMessageHandler;
 import response.CreateGameResponse;
@@ -20,6 +18,7 @@ import ui.websocket.WebSocketFacade;
 
 public class ChessClient {
     private String username = null;
+    private ChessGame.TeamColor playerColor;
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.LOGGEDOUT;
@@ -29,8 +28,8 @@ public class ChessClient {
     private Collection<GameData> gameCollection;
 
     private Map<Integer, Integer> gameMap;
-    private int gameID;
-
+    private int gameID; // may not be updating as often as necessary
+    private static ChessGame currentGame;
 
     public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -40,6 +39,12 @@ public class ChessClient {
 
 //        server.clearDatabase();
     }
+
+    public ChessGame.TeamColor getPlayerColor() { // set for join or observe
+        return playerColor;
+    }
+
+
 
     public String eval(String input) {
         try {
@@ -55,11 +60,11 @@ public class ChessClient {
                 case "observe" -> observe(params);
                 case "logout" -> logout();
                 case "quit" -> quit();
-//                case "redraw" -> redraw();
-//                case "leave" -> leave();
+                case "redraw" -> redraw();
+                case "leave" -> leave();
                 case "makemove" -> makeMove(params);
-//                case "resign" -> resign();
-//                case "highlight" -> highlight(params);
+                case "resign" -> resign();
+                case "highlight" -> highlight(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -156,11 +161,10 @@ public class ChessClient {
             // for websocket
             String error = "no error";
 
-            ChessGame.TeamColor teamColor = null;
             if (color.equalsIgnoreCase("white")) {
-                teamColor = ChessGame.TeamColor.WHITE;
+                playerColor = ChessGame.TeamColor.WHITE;
             } else if (color.equalsIgnoreCase("black")) {
-                teamColor = ChessGame.TeamColor.BLACK;
+                playerColor = ChessGame.TeamColor.BLACK;
             }
 
 
@@ -180,12 +184,12 @@ public class ChessClient {
             server.joinGame(color, id, authToken);
             StringBuilder result = new StringBuilder();
             result.append("Joined game").append(" as the ").append(color).append(" player.");
-            result.append(createStartingBoard());
 
-            ws.joinPlayer(teamColor, authToken, id);
+            ws.joinPlayer(playerColor, authToken, id);
             this.gameID = id;
-
             state = State.PLAYINGGAME;
+
+            currentGame = game.game();
             return result.toString();
         }
         throw new ResponseException("Expected: <ID> <PLAYER_COLOR>");
@@ -196,14 +200,18 @@ public class ChessClient {
         if (params.length >= 1) {
             var number = Integer.parseInt(params[0]);
             var id = gameMap.get(number);
+            var game = gameCollection.stream().filter(g -> g.gameID() == id).findFirst().orElse(null);
             StringBuilder result = new StringBuilder();
             result.append("Observing game ").append(".");
-            result.append(createStartingBoard());
             state = State.OBSERVINGGAME;
 
+            this.playerColor = null;
 
             ws.joinObserver(authToken, id);
             this.gameID = id;
+
+            assert game != null;
+            currentGame = game.game();
 
             return result.toString();
         }
@@ -216,8 +224,10 @@ public class ChessClient {
             var start = params[0];
             var end = params[1];
             var move = stringToChessMove(start, end);
+            var game = gameCollection.stream().filter(g -> g.gameID() == gameID).findFirst().orElse(null);
             System.out.println("ChessMove move: " + move);
-
+            assert game != null;
+            currentGame = game.game();
             ws.makeMove(authToken, gameID, move);
         } else {
             throw new ResponseException("Expected: <STARTING_COORDINATES> <ENDING_COORDINATES>");
@@ -229,7 +239,7 @@ public class ChessClient {
         assertSignedIn();
         if (params.length >= 1) {
             var position = params[0];
-
+            var game = gameCollection.stream().filter(g -> g.gameID() == gameID).findFirst().orElse(null);
             String removeParenthesis = position.replaceAll("[()]", "");
 
             // Split the strings into the x and y coordinates
@@ -239,9 +249,35 @@ public class ChessClient {
             int yCoordinate = (int) coordinates[1].charAt(0) - 'a' + 1;
 
             var pos = new ChessPosition(xCoordinate, yCoordinate);
-//            return ws.highlight(authToken, gameID, pos);
+            assert game != null;
+            return drawHighlight(game.game(), pos, playerColor);
+
+        } else {
+            throw new ResponseException("Expected: <PIECE_COORDINATES>");
         }
-        throw new ResponseException("Expected: <PIECE_COORDINATES>");
+    }
+
+    public String redraw() throws ResponseException {
+        assertSignedIn();
+        var game = gameCollection.stream().filter(g -> g.gameID() == gameID).findFirst().orElse(null);
+        assert game != null;
+        return drawChessBoard(game.game(), playerColor);
+    }
+
+    public String resign() throws ResponseException {
+        assertSignedIn();
+        ws.resign(authToken, gameID);
+        authToken = null;
+        state = State.LOGGEDIN;
+        return "";
+    }
+
+    public String leave() throws ResponseException {
+        assertSignedIn();
+        ws.leave(authToken, gameID);
+        authToken = null;
+        state = State.LOGGEDIN;
+        return "";
     }
 
     public String help() {
@@ -303,47 +339,6 @@ public class ChessClient {
         }
     }
 
-    public static String createStartingBoard() {
-        StringBuilder board = new StringBuilder();
-        String l = SET_BG_COLOR_LIGHT_GREY;
-        String d = SET_BG_COLOR_DARK_GREY;
-        String r = SET_TEXT_COLOR_RED;
-        String b = SET_TEXT_COLOR_BLUE;
-        String w = SET_TEXT_COLOR_WHITE;
-        String c = RESET_BG_COLOR;
-
-        // board 1:
-        board.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
-        board.append(" 1 ").append(r).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 1 ").append("\n");
-        board.append(" 2 ").append(r).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 2 ").append("\n");
-
-        for (int i = 2; i < 6; i+=2) {
-            board.append(" ").append(i).append(" ").append(r).append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(c).append(w).append(" ").append(i).append(" ").append("\n");
-            board.append(" ").append(i+1).append(" ").append(r).append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(c).append(w).append(" ").append(i+1).append(" ").append("\n");
-        }
-        board.append(" 7 ").append(b).append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(c).append(w).append(" 7 ").append("\n");
-        board.append(" 8 ").append(b).append(d).append(" R ").append(l).append(" N ").append(d).append(" B ").append(l).append(" K ").append(d).append(" Q ").append(l).append(" B ").append(d).append(" N ").append(l).append(" R ").append(c).append(w).append(" 8 ").append("\n");
-        board.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
-
-        board.append("\n");
-
-        // board 2:
-        board.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
-        board.append(" 8 ").append(b).append(l).append(" R ").append(d).append(" N ").append(l).append(" B ").append(d).append(" K ").append(l).append(" Q ").append(d).append(" B ").append(l).append(" N ").append(d).append(" R ").append(c).append(w).append(" 8 ").append("\n");
-        board.append(" 7 ").append(b).append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(c).append(w).append(" 7 ").append("\n");
-
-        for (int i = 6; i > 2; i-=2) {
-            board.append(" ").append(i).append(" ").append(r).append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(c).append(w).append(" ").append(i).append(" ").append("\n");
-            board.append(" ").append(i-1).append(" ").append(r).append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(d).append("   ").append(l).append("   ").append(c).append(w).append(" ").append(i-1).append(" ").append("\n");
-        }
-        board.append(" 2 ").append(r).append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(l).append(" P ").append(d).append(" P ").append(c).append(w).append(" 2 ").append("\n");
-        board.append(" 1 ").append(r).append(d).append(" R ").append(l).append(" N ").append(d).append(" B ").append(l).append(" K ").append(d).append(" Q ").append(l).append(" B ").append(d).append(" N ").append(l).append(" R ").append(c).append(w).append(" 1 ").append("\n");
-        board.append("    a  b  c  d  e  f  g  h\n");
-
-
-        return board.toString();
-    }
-
     public static String quit() {
         System.exit(0);
         return "quit";
@@ -370,6 +365,132 @@ public class ChessClient {
 
         // Create a new ChessMove object
         return new ChessMove(start, end, null);
+    }
+
+    public static String drawHighlight(ChessGame game, ChessPosition position, ChessGame.TeamColor teamColor) {
+        ChessBoard board = game.getBoard();
+        Collection<ChessMove> moves = game.validMoves(position);
+
+        System.out.println("drawChessBoard called");
+        StringBuilder sb = new StringBuilder();
+        String l = SET_BG_COLOR_LIGHT_GREY;
+        String d = SET_BG_COLOR_DARK_GREY;
+        String r = SET_TEXT_COLOR_RED;
+        String b = SET_TEXT_COLOR_BLUE;
+        String w = SET_TEXT_COLOR_WHITE;
+        String c = RESET_BG_COLOR;
+        String h = SET_BG_COLOR_GREEN; // Highlight color
+
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
+        }
+
+        int startRow = teamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
+        int endRow = teamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
+        int rowStep = teamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+
+        for (int row = startRow; row != endRow; row += rowStep) {
+            sb.append(" ").append(Math.abs(row)).append(" ");
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                boolean isHighlighted = false;
+                for (ChessMove move : moves) {
+                    if (move.getEndPosition().equals(pos)) {
+                        isHighlighted = true;
+                        break;
+                    }
+                }
+                if (piece == null) {
+                    sb.append(r).append((row + col) % 2 == 0 ? l : d)
+                            .append(isHighlighted ? h+"   " : "   ")
+                            .append(c).append(w);
+                } else {
+                    char pieceChar = getPieceSymbol(piece);
+                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.BLACK ? b : r)
+                            .append((row + col) % 2 == 0 ? l : d)
+                            .append(isHighlighted ? h+"   " : " ")
+                            .append(pieceChar)
+                            .append(isHighlighted ? h+"   " : " ")
+                            .append(c).append(w);
+                }
+            }
+            sb.append(" ").append(Math.abs(row)).append("\n");
+        }
+
+        // Add the last row based on the teamColor
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
+        }
+        return sb.toString();
+    }
+
+    public static String drawChessBoard(ChessGame game, ChessGame.TeamColor teamColor) {
+        ChessBoard board = game.getBoard();
+        ChessGame.TeamColor currentTeamColor = teamColor;
+
+        System.out.println("drawChessBoard called");
+        StringBuilder sb = new StringBuilder();
+        String l = SET_BG_COLOR_LIGHT_GREY;
+        String d = SET_BG_COLOR_DARK_GREY;
+        String r = SET_TEXT_COLOR_RED;
+        String b = SET_TEXT_COLOR_BLUE;
+        String w = SET_TEXT_COLOR_WHITE;
+        String c = RESET_BG_COLOR;
+
+        // Add the first row based on the teamColor
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
+        }
+
+        int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
+        int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
+        int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+
+        for (int row = startRow; row != endRow; row += rowStep) {
+            sb.append(" ").append(row).append(" ");
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null) {
+                    sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
+                } else {
+                    char pieceChar = getPieceSymbol(piece);
+                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.BLACK ? b : r)
+                            .append((row + col) % 2 == 0 ? l : d)
+                            .append(" ").append(pieceChar).append(" ")
+                            .append(c).append(w);
+                }
+            }
+            sb.append(" ").append(row).append("\n");
+        }
+
+        // Add the last row based on the teamColor
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
+        } else {
+            sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
+        }
+
+        return sb.toString();
+    }
+
+    private static char getPieceSymbol(ChessPiece piece) {
+        return switch (piece.getPieceType()) {
+            case ROOK -> 'R';
+            case KNIGHT -> 'N';
+            case BISHOP -> 'B';
+            case QUEEN -> 'Q';
+            case KING -> 'K';
+            case PAWN -> 'P';
+            default -> ' ';
+        };
     }
 }
 

@@ -12,7 +12,7 @@ public class ServerMessage {
     }
 
     ServerMessageType serverMessageType;
-    private ChessGame chessGame;
+    public ChessGame game;
     private String message;
     public String errorMessage;
     @Override
@@ -31,7 +31,7 @@ public class ServerMessage {
     }
 
     public ChessGame getGame() {
-        return chessGame;
+        return game;
     }
     public void setMessage(String message) {
         this.message = message;
