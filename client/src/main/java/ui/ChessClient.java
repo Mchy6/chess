@@ -344,7 +344,6 @@ public class ChessClient {
         System.exit(0);
         return "quit";
     }
-
     private static ChessMove stringToChessMove(String startString, String endString) {
         // Remove the surrounding parentheses
         startString = startString.replaceAll("[()]", "");
