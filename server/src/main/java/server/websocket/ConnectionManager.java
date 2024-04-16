@@ -14,13 +14,6 @@ public class ConnectionManager {
 
     public void add(String authToken, Session session, int gameID) {
 
-//        for (ConcurrentHashMap.Entry<Integer, ConcurrentHashMap<String, Connection>> entry : allGamesMap.entrySet()) {
-//            ConcurrentHashMap<String, Connection> innerMap = entry.getValue();
-//            if (innerMap.containsKey(authToken)) {
-//                gameID = entry.getKey();
-//            }
-//        }
-
         Connection connection = new Connection(authToken, session);
         ConcurrentHashMap<String, Connection> gameMap = allGamesMap.get(gameID);
 

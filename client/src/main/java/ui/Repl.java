@@ -74,6 +74,7 @@ public class Repl implements ServerMessageHandler {
     }
 
     public static String drawChessBoard(ChessGame game, ChessGame.TeamColor teamColor) {
+        int a = 1;
         ChessBoard board = game.getBoard();
         ChessGame.TeamColor currentTeamColor = teamColor;
 
@@ -85,7 +86,7 @@ public class Repl implements ServerMessageHandler {
         String b = SET_TEXT_COLOR_BLUE;
         String w = SET_TEXT_COLOR_WHITE;
         String c = RESET_BG_COLOR;
-
+        a = 1;
         // Add the first row based on the teamColor
         if (teamColor == ChessGame.TeamColor.WHITE) {
             sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
@@ -96,13 +97,14 @@ public class Repl implements ServerMessageHandler {
         int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
         int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
         int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
-
+        a = 1;
         for (int row = startRow; row != endRow; row += rowStep) {
             sb.append(" ").append(row).append(" ");
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(pos);
                 if (piece == null) {
+                    a = 1;
                     sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
                 } else {
                     char pieceChar = getPieceSymbol(piece);
@@ -114,18 +116,19 @@ public class Repl implements ServerMessageHandler {
             }
             sb.append(" ").append(row).append("\n");
         }
-
+        a = 1;
         // Add the last row based on the teamColor
         if (teamColor == ChessGame.TeamColor.WHITE) {
             sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
         } else {
             sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");
         }
-
+        a = 1;
         return sb.toString();
     }
 
     private static char getPieceSymbol(ChessPiece piece) {
+        int a = 1;
         return switch (piece.getPieceType()) {
             case ROOK -> 'R';
             case KNIGHT -> 'N';
@@ -133,6 +136,7 @@ public class Repl implements ServerMessageHandler {
             case QUEEN -> 'Q';
             case KING -> 'K';
             case PAWN -> 'P';
+            a = 1;
             default -> ' ';
         };
     }

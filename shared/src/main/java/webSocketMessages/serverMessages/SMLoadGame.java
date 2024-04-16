@@ -15,8 +15,10 @@ public class SMLoadGame extends ServerMessage {
 
 
     private static char getPieceSymbol(ChessPiece piece) {
+        int a = 1;
         return switch (piece.getPieceType()) {
             case ROOK -> 'R';
+            int a = 1;
             case KNIGHT -> 'N';
             case BISHOP -> 'B';
             case QUEEN -> 'Q';
@@ -24,6 +26,7 @@ public class SMLoadGame extends ServerMessage {
             case PAWN -> 'P';
             default -> ' ';
         };
+        a = 1;
     }
 
 

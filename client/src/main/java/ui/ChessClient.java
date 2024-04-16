@@ -452,20 +452,23 @@ public class ChessClient {
         int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
         int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
         int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
-
+        int a = 1;
         for (int row = startRow; row != endRow; row += rowStep) {
             sb.append(" ").append(row).append(" ");
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
+                a = 1;
                 ChessPiece piece = board.getPiece(pos);
                 if (piece == null) {
                     sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
                 } else {
                     char pieceChar = getPieceSymbol(piece);
+                    a = 1;
                     sb.append(piece.getTeamColor() == ChessGame.TeamColor.BLACK ? b : r)
                             .append((row + col) % 2 == 0 ? l : d)
                             .append(" ").append(pieceChar).append(" ")
                             .append(c).append(w);
+                    a = 1;
                 }
             }
             sb.append(" ").append(row).append("\n");
