@@ -52,7 +52,7 @@ public class WebSocketHandler {
     }
 
     private void joinPlayer(ChessGame.TeamColor playerColor, String authToken, Session session, int gameID) throws IOException, InvalidMoveException, DataAccessException {
-        connections.add(authToken, session);
+        connections.add(authToken, session, gameID);
         try {
             GameData gameData = dataAccess.getGame(gameID);
             AuthData authData = dataAccess.getAuthToken(authToken);
@@ -83,7 +83,7 @@ public class WebSocketHandler {
     }
 
     private void joinObserver(String authToken, Session session, int gameID) throws IOException {
-        connections.add(authToken, session);
+        connections.add(authToken, session, gameID);
         try {
             GameData gameData = dataAccess.getGame(gameID);
             AuthData authData = dataAccess.getAuthToken(authToken);

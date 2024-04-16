@@ -12,15 +12,14 @@ public class ConnectionManager {
     public final ConcurrentHashMap<Integer, ConcurrentHashMap<String, Connection>> allGamesMap = new ConcurrentHashMap<>();
 
 
-    public void add(String authToken, Session session) {
-        int gameID = -1;
+    public void add(String authToken, Session session, int gameID) {
 
-        for (ConcurrentHashMap.Entry<Integer, ConcurrentHashMap<String, Connection>> entry : allGamesMap.entrySet()) {
-            ConcurrentHashMap<String, Connection> innerMap = entry.getValue();
-            if (innerMap.containsKey(authToken)) {
-                gameID = entry.getKey();
-            }
-        }
+//        for (ConcurrentHashMap.Entry<Integer, ConcurrentHashMap<String, Connection>> entry : allGamesMap.entrySet()) {
+//            ConcurrentHashMap<String, Connection> innerMap = entry.getValue();
+//            if (innerMap.containsKey(authToken)) {
+//                gameID = entry.getKey();
+//            }
+//        }
 
         Connection connection = new Connection(authToken, session);
         ConcurrentHashMap<String, Connection> gameMap = allGamesMap.get(gameID);
