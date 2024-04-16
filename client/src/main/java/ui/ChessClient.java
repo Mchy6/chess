@@ -270,6 +270,7 @@ public class ChessClient {
         authToken = null;
         state = State.LOGGEDIN;
         return "";
+
     }
 
     public String leave() throws ResponseException {
