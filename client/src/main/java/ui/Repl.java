@@ -27,6 +27,8 @@ public class Repl implements ServerMessageHandler {
     private final ChessClient client;
     private State state = State.LOGGEDOUT;
 
+    public ChessGame game;
+
 
     public Repl(String serverUrl) throws ResponseException {
         client = new ChessClient(serverUrl, this);
@@ -62,6 +64,7 @@ public class Repl implements ServerMessageHandler {
             }
             ChessGame game = serverMessage.getGame();
             System.out.println(drawChessBoard(game, playerColor));
+            this.game = game;
         } else {
             System.out.println("notify called" + serverMessage.toString());
             System.out.println(serverMessage.getMessage());
@@ -88,19 +91,24 @@ public class Repl implements ServerMessageHandler {
         String c = RESET_BG_COLOR;
         a = 1;
         // Add the first row based on the teamColor
-        if (teamColor == ChessGame.TeamColor.WHITE) {
+        if (teamColor == ChessGame.TeamColor.BLACK) {
             sb.append(w).append(c).append("\n    h  g  f  e  d  c  b  a\n");
         } else {
             sb.append(w).append(c).append("\n    a  b  c  d  e  f  g  h\n");
         }
 
-        int startRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
-        int endRow = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
-        int rowStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+        int startRow = currentTeamColor == ChessGame.TeamColor.WHITE ? 8 : 1;
+        int endRow = currentTeamColor == ChessGame.TeamColor.WHITE ? 0 : 9;
+        int rowStep = currentTeamColor == ChessGame.TeamColor.WHITE ? -1 : 1;
+
+        int startCol = currentTeamColor == ChessGame.TeamColor.BLACK ? 8 : 1;
+        int endCol = currentTeamColor == ChessGame.TeamColor.BLACK ? 0 : 9;
+        int colStep = currentTeamColor == ChessGame.TeamColor.BLACK ? -1 : 1;
+
         a = 1;
         for (int row = startRow; row != endRow; row += rowStep) {
             sb.append(" ").append(row).append(" ");
-            for (int col = 1; col <= 8; col++) {
+            for (int col = startCol; col != endCol; col += colStep) {
                 ChessPosition pos = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(pos);
                 if (piece == null) {
@@ -108,7 +116,7 @@ public class Repl implements ServerMessageHandler {
                     sb.append(r).append((row + col) % 2 == 0 ? l : d).append("   ").append(c).append(w);
                 } else {
                     char pieceChar = getPieceSymbol(piece);
-                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.BLACK ? b : r)
+                    sb.append(piece.getTeamColor() == ChessGame.TeamColor.WHITE ? b : r)
                             .append((row + col) % 2 == 0 ? l : d)
                             .append(" ").append(pieceChar).append(" ")
                             .append(c).append(w);
@@ -118,7 +126,7 @@ public class Repl implements ServerMessageHandler {
         }
         a = 1;
         // Add the last row based on the teamColor
-        if (teamColor == ChessGame.TeamColor.WHITE) {
+        if (teamColor == ChessGame.TeamColor.BLACK) {
             sb.append(w).append(c).append("    h  g  f  e  d  c  b  a\n");
         } else {
             sb.append(w).append(c).append("    a  b  c  d  e  f  g  h\n");

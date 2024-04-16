@@ -46,7 +46,7 @@ public class WebSocketHandler {
                 resign(userGameCommand.getAuthToken(), userGameCommand.getID());
             }
             case LEAVE -> { // must make ugcLeave
-                leave(userGameCommand.getAuthToken(), userGameCommand.getUsername());
+                leave(userGameCommand.getAuthToken());
             }
         }
     }
@@ -111,64 +111,67 @@ public class WebSocketHandler {
         // if not gameIsOver:
         try {
             GameData gameData = dataAccess.getGame(gameID);
-            AuthData authData = dataAccess.getAuthToken(authToken);
-            String playerName = authData.username();
-
             ChessGame game = gameData.game();
+            if (!game.isGameOver()) {
+                AuthData authData = dataAccess.getAuthToken(authToken);
+                String playerName = authData.username();
 
-            System.out.println("DEBUG: is game over in makeMove? " + game.isGameOver());
+
+                System.out.println("DEBUG: is game over in makeMove? " + game.isGameOver());
 
 
-            // Check player is not out of turn
-            if (game.getTeamTurn() == ChessGame.TeamColor.WHITE && !gameData.whiteUsername().equals(playerName)) {
-                connections.rootBroadcast(new SMError("Error: not white player's turn"), authToken);
-                return;
-            } else if (game.getTeamTurn() == ChessGame.TeamColor.BLACK && !gameData.blackUsername().equals(playerName)) {
-                connections.rootBroadcast(new SMError("Error: not black player's turn"), authToken);
-                return;
-            } else if (game.isGameOver()) {
-                connections.rootBroadcast(new SMError("Error: Cannot make move, game is over"), authToken);
-                return;
+                // Check player is not out of turn
+                if (gameData.whiteUsername() != null && game.getTeamTurn() == ChessGame.TeamColor.WHITE && !gameData.whiteUsername().equals(playerName)) {
+                    connections.rootBroadcast(new SMError("Error: not white player's turn"), authToken);
+                    return;
+                } else if (gameData.whiteUsername() != null && game.getTeamTurn() == ChessGame.TeamColor.BLACK && !gameData.blackUsername().equals(playerName)) {
+                    connections.rootBroadcast(new SMError("Error: not black player's turn"), authToken);
+                    return;
+                } else if (game.isGameOver()) {
+                    connections.rootBroadcast(new SMError("Error: Cannot make move, game is over"), authToken);
+                    return;
+                } else {
+                    // Server verifies the validity of the move.
+                    if (!gameData.game().validMoves(move.getStartPosition()).contains(move)) {
+                        connections.rootBroadcast(new SMError("Error: invalid move"), authToken);
+                        return;
+                    }
+                    try {
+                        game.makeMove(move);
+                    } catch (InvalidMoveException e) {
+                        connections.rootBroadcast(new SMError("Error: invalid move (line 141 WebSocketHandler)"), authToken);
+                        return;
+                    }
+
+                    GameData updatedGameData = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+
+                    dataAccess.updateGame(updatedGameData);
+
+                    ChessPosition startPosition = move.getStartPosition();
+                    ChessPosition endPosition = move.getEndPosition();
+
+                    var notificationMessage = new SMNotification(String.format("%s moved %s to %s", playerName, startPosition, endPosition));
+                    connections.excludeRootBroadcast(notificationMessage, authToken);
+
+                    var loadGameMessage = new SMLoadGame(game);
+                    connections.broadcast(loadGameMessage, authToken);
+
+
+                    // If the move results in check or checkmate the server sends a Notification message to all clients.
+
+                    if (game.isInCheckmate(game.getTeamTurn())) {
+                        var checkmateMessage = new SMNotification(String.format("%s is in checkmate, game is over", playerName));
+                        connections.excludeRootBroadcast(checkmateMessage, authToken);
+                    } else if (game.isInStalemate(game.getTeamTurn())) {
+                        var stalemateMessage = new SMNotification(String.format("%s is in stalemate, game is over", playerName));
+                        connections.excludeRootBroadcast(stalemateMessage, authToken);
+                    } else if (game.isInCheck(game.getTeamTurn())) {
+                        var checkMessage = new SMNotification(String.format("%s is in check", playerName));
+                        connections.excludeRootBroadcast(checkMessage, authToken);
+                    }
+                }
             } else {
-                // Server verifies the validity of the move.
-                if (!gameData.game().validMoves(move.getStartPosition()).contains(move)) {
-                    connections.rootBroadcast(new SMError("Error: invalid move"), authToken);
-                    return;
-                }
-                try {
-                    game.makeMove(move);
-                } catch (InvalidMoveException e) {
-                    connections.rootBroadcast(new SMError("Error: invalid move (line 141 WebSocketHandler)"), authToken);
-                    return;
-                }
-
-                GameData updatedGameData = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-
-                dataAccess.updateGame(updatedGameData);
-
-                ChessPosition startPosition = move.getStartPosition();
-                ChessPosition endPosition = move.getEndPosition();
-
-                var notificationMessage = new SMNotification(String.format("%s moved %s to %s", playerName, startPosition, endPosition));
-                connections.excludeRootBroadcast(notificationMessage, authToken);
-
-                var loadGameMessage = new SMLoadGame(game);
-                connections.broadcast(loadGameMessage, authToken);
-
-
-                // If the move results in check or checkmate the server sends a Notification message to all clients.
-
-                if (game.isInCheckmate(game.getTeamTurn())) {
-                    var checkmateMessage = new SMNotification(String.format("%s is in checkmate, game is over", playerName));
-                    connections.excludeRootBroadcast(checkmateMessage, authToken);
-                } else if (game.isInStalemate(game.getTeamTurn())) {
-                    var stalemateMessage = new SMNotification(String.format("%s is in stalemate, game is over", playerName));
-                    connections.excludeRootBroadcast(stalemateMessage, authToken);
-                } else if (game.isInCheck(game.getTeamTurn())) {
-                    var checkMessage = new SMNotification(String.format("%s is in check", playerName));
-                    connections.excludeRootBroadcast(checkMessage, authToken);
-                }
-
+                connections.rootBroadcast(new SMError("Error: Cannot make move, game is over"), authToken);
             }
 
         } catch (DataAccessException e) {
@@ -190,25 +193,24 @@ public class WebSocketHandler {
                 connections.rootBroadcast(new SMError("Error: Cannot resign, game is over"), authToken);
                 return;
             }
-            System.out.println("DEBUG: is game over in resign? " + gameData.game().isGameOver());
 
-            game.setGameIsOverTrue();
-            GameData updatedGameData = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-
-            System.out.println("DEBUG: is game over in resign? " + updatedGameData.game().isGameOver());
-
-            dataAccess.updateGame(updatedGameData);
             var notificationMessage = new SMNotification(String.format("%s resigned, game is over", playerName));
             connections.broadcast(notificationMessage, authToken);
-            connections.remove(authToken);
+            game.setGameIsOverTrue();
+            GameData updatedGameData = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+            dataAccess.updateGame(updatedGameData);
+
+//            connections.remove(authToken);
         } catch (DataAccessException e) {
             connections.broadcast(new SMError("Error thrown: " + e), authToken);
         }
 
     }
 
-    private void leave(String authToken, String username) throws IOException {
-        var notificationMessage = new SMNotification(String.format("%s left the game", username));
+    private void leave(String authToken) throws IOException, DataAccessException {
+        AuthData authData = dataAccess.getAuthToken(authToken);
+        String playerName = authData.username();
+        var notificationMessage = new SMNotification(String.format("%s left the game", playerName));
         connections.excludeRootBroadcast(notificationMessage, authToken);
         connections.remove(authToken);
     }
